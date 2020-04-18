@@ -12,7 +12,7 @@ services.AddDbContext<BloggingContext>(opt =>
                     })
                 .AddUnitOfWork<BloggingContext>().AddRepository();
 ```
-`AddRepository()  可选。默认使用程序集扫描`
+`AddRepository()  可选。默认使用程序集扫描。不适用这个的化，请自行注入仓储`
 ```csharp
 public static IServiceCollection AddRepository(this IServiceCollection services)
         {
