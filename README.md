@@ -29,5 +29,17 @@ public static IServiceCollection AddRepository(this IServiceCollection services)
             return services;
         }
 ```
+get repository
+```csharp
+        private readonly IUnitOfWork<BloggingContext> _unitOfWork;
+        private readonly ICustomBlogRepository _customBlogRepository;
+
+        public ValuesController(IUnitOfWork<BloggingContext> unitOfWork)
+        {
+            _unitOfWork = unitOfWork;
+            _customBlogRepository = unitOfWork.GetRepository<ICustomBlogRepository>();
+        }
+```
+
 
 
