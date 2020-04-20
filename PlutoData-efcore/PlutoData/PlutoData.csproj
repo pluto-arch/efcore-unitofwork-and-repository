@@ -2,7 +2,18 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>0.0.2-preview</Version>
+    <Version>1.0.1</Version>
+    <Product>PlutoData</Product>
+    <Description>efcore 单元工作和通用泛型仓储</Description>
+    <PackageId>PlutoData</PackageId>
+    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <PackageReleaseNotes>第一版</PackageReleaseNotes>
+    <PackageProjectUrl>https://github.com/pluto-arch/efcore-unitofwork-and-repository</PackageProjectUrl>
+    <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
+    <FileVersion>0.0.2.0</FileVersion>
+    <Company>PlutoData</Company>
+    <AssemblyVersion>0.0.2.0</AssemblyVersion>
+    <Authors>PlutoData</Authors>
   </PropertyGroup>
 
   <ItemGroup>
