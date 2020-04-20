@@ -18,7 +18,6 @@ namespace apisample
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.EnableAutoHistory(null);
         }
 
     }

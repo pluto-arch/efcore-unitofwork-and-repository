@@ -34,25 +34,17 @@ namespace PlutoData
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
 
-        /// <summary>
-        /// 获取数据库上下文
-        /// </summary>
-        /// <returns>The instance of type <typeparamref name="TContext"/>.</returns>
+        /// <inheritdoc />
         public TContext DbContext => _context;
 
 
-        /// <summary>
-        /// 是否有活动的事务对象
-        /// </summary>
+        /// <inheritdoc />
         public bool HasActiveTransaction
         {
             get { return _currentTransaction != null; }
         }
 
-        /// <summary>
-        /// 切换数据库(还不完善)
-        /// </summary>
-        /// <param name="database"></param>
+        /// <inheritdoc />
         public void ChangeDatabase(string database)
         {
             var connection = _context.Database.GetDbConnection();
@@ -77,78 +69,61 @@ namespace PlutoData
         }
 
 
-        /// <summary>
-        /// 获取仓储(和请求周期一致)
-        /// </summary>
-        /// <typeparam name="IRepository"></typeparam>
-        /// <returns></returns>
-        public IRepository GetRepository<IRepository>()
+        /// <inheritdoc />
+        public TRepository GetRepository<TRepository>() where TRepository: IRepository
         {
-            var repository = _context.GetService<IRepository>();
+            var repository = _context.GetService<TRepository>();
             return repository;
         }
-        
-        /// <summary>
-        /// 执行策略
-        /// </summary>
-        /// <returns></returns>
+
+
+
+
+
+
+        /// <inheritdoc />
         public IExecutionStrategy CreateExecutionStrategy()
         {
             return _context.Database.CreateExecutionStrategy();
         }
 
 
-        /// <summary>
-        /// 执行sql
-        /// </summary>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public int ExecuteSqlCommand(string sql, params object[] parameters) => _context.Database.ExecuteSqlRaw(sql, parameters);
 
 
-        /// <summary>
-        /// 执行SQL查询，返回实体，不支持直接返回非实体对象，如果有需要请使用 select 映射
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <param name="sql"></param>
-        /// <param name="parameters"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public IQueryable<TEntity> FromSql<TEntity>(string sql, params object[] parameters) where TEntity : class => _context.Set<TEntity>().FromSqlRaw(sql, parameters);
 
 
 
         #region 触发领域事件的savechange
-        public void SaveEntityChanges(Action dispatchDomainEvent = null, bool ensureAutoHistory = false)
+        /// <inheritdoc />
+        public void SaveEntityChanges(Action dispatchDomainEvent = null)
         {
             dispatchDomainEvent?.Invoke();
-            if (ensureAutoHistory)
-            {
-                _context.EnsureAutoHistory();
-            }
             _context.SaveChanges();
         }
-        public async Task<int> SaveEntityChangesAsync(Action dispatchDomainEvent = null, bool ensureAutoHistory = false,CancellationToken cancellationToken=default)
+
+        /// <inheritdoc />
+        public async Task<int> SaveEntityChangesAsync(Action dispatchDomainEvent = null,CancellationToken cancellationToken=default)
         {
             dispatchDomainEvent?.Invoke();
-            if (ensureAutoHistory)
-            {
-                _context.EnsureAutoHistory();
-            }
             return await _context.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<int> SaveChangesAsync(bool ensureAutoHistory = false, CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks)
+        /// <inheritdoc />
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks)
         {
             using (var ts = new TransactionScope())
             {
                 var count = 0;
                 foreach (var unitOfWork in unitOfWorks)
                 {
-                    count += await unitOfWork.SaveChangesAsync(ensureAutoHistory, cancellationToken);
+                    count += await unitOfWork.SaveChangesAsync(cancellationToken);
                 }
 
-                count += await SaveChangesAsync(ensureAutoHistory, cancellationToken);
+                count += await SaveChangesAsync(cancellationToken);
 
                 ts.Complete();
 
@@ -159,62 +134,34 @@ namespace PlutoData
         #endregion
 
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ensureAutoHistory">是否自动记录数据更改历史记录</param>
-        /// <returns></returns>
-        public int SaveChanges(bool ensureAutoHistory = false)
+        /// <inheritdoc />
+        public int SaveChanges()
         {
-            if (ensureAutoHistory)
-            {
-                _context.EnsureAutoHistory();
-            }
-
             return _context.SaveChanges();
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="ensureAutoHistory">是否自动记录数据更改历史记录</param>
-        /// <returns></returns>
-        public async Task<int> SaveChangesAsync(bool ensureAutoHistory = false,CancellationToken cancellationToken=default)
+        /// <inheritdoc />
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken=default)
         {
-            if (ensureAutoHistory)
-            {
-                _context.EnsureAutoHistory();
-            }
             return await _context.SaveChangesAsync(cancellationToken);
         }
 
 
-        /// <summary>
-        /// 更改追踪
-        /// </summary>
-        /// <param name="rootEntity"></param>
-        /// <param name="callback"></param>
+        /// <inheritdoc />
         public void TrackGraph(object rootEntity, Action<EntityEntryGraphNode> callback)
         {
             _context.ChangeTracker.TrackGraph(rootEntity, callback);
         }
 
-        /// <summary>
-        /// 开始事务--异步
-        /// </summary>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_currentTransaction != null) return null;
-            _currentTransaction = await DbContext.Database.BeginTransactionAsync(System.Data.IsolationLevel.ReadCommitted, cancellationToken);
+            _currentTransaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);
             return _currentTransaction;
         }
 
-        /// <summary>
-        /// 提交事务--异步
-        /// </summary>
-        /// <param name="transaction"></param>
-        /// <returns></returns>
+        /// <inheritdoc />
         public async Task CommitTransactionAsync(IDbContextTransaction transaction,CancellationToken cancellationToken = default)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));

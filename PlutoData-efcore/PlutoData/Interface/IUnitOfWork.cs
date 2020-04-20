@@ -23,11 +23,11 @@ namespace PlutoData.Interface
         void ChangeDatabase(string database);
 
         /// <summary>
-        /// 获取仓储
+        ///  获取仓储
         /// </summary>
-        /// <typeparam name="IRepository"></typeparam>
+        /// <typeparam name="TRepository"></typeparam>
         /// <returns></returns>
-        IRepository GetRepository<IRepository>();
+        TRepository GetRepository<TRepository>() where TRepository: IRepository;
 
         /// <summary>
         /// 返回一个数据库执行策略
@@ -38,16 +38,14 @@ namespace PlutoData.Interface
         /// <summary>
         /// 保存更改
         /// </summary>
-        /// <param name="ensureAutoHistory">请确保自动记录更改历史记录: modelBuilder。EnableAutoHistory（）;</param>
         /// <returns></returns>
-        int SaveChanges(bool ensureAutoHistory = false);
+        int SaveChanges();
         /// <summary>
         /// 保存更改
         /// </summary>
-        /// <param name="ensureAutoHistory">请确保自动记录更改历史记录: modelBuilder。EnableAutoHistory（）;</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> SaveChangesAsync(bool ensureAutoHistory = false, CancellationToken cancellationToken = default);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// 执行SQL脚本--返回受影响的行数
@@ -90,26 +88,24 @@ namespace PlutoData.Interface
         /// 触发领域事件的保存更改
         /// </summary>
         /// <param name="dispatchDomainEvent"></param>
-        /// <param name="ensureAutoHistory">请确保自动记录更改历史记录: modelBuilder。EnableAutoHistory（）;</param>
-        void SaveEntityChanges(Action dispatchDomainEvent = null, bool ensureAutoHistory = false);
+        void SaveEntityChanges(Action dispatchDomainEvent = null);
         /// <summary>
         /// 触发领域事件的保存更改--异步
         /// </summary>
         /// <param name="dispatchDomainEvent"></param>
-        /// <param name="ensureAutoHistory">请确保自动记录更改历史记录: modelBuilder。EnableAutoHistory（）;</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task<int> SaveEntityChangesAsync(Action dispatchDomainEvent = null, bool ensureAutoHistory = false, CancellationToken cancellationToken = default);
+        Task<int> SaveEntityChangesAsync(Action dispatchDomainEvent = null, CancellationToken cancellationToken = default);
 
 
 
         /// <summary>
-        /// 保存更改。
+        /// 保存更改
         /// </summary>
-        /// <param name="ensureAutoHistory"><c>True</c> 请确保自动记录更改历史记录: modelBuilder。EnableAutoHistory（）; </param>
-        /// <param name="unitOfWorks">An optional <see cref="IUnitOfWork"/> array.</param>
-        /// <returns>A <see cref="Task{TResult}"/> 代表异步保存操作。任务结果包含写入数据库的状态实体的数量.</returns>
-        Task<int> SaveChangesAsync(bool ensureAutoHistory = false, CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks);
+        /// <param name="cancellationToken"></param>
+        /// <param name="unitOfWorks"></param>
+        /// <returns></returns>
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks);
 
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);

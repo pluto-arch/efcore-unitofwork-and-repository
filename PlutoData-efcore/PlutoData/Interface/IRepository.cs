@@ -11,11 +11,14 @@ using PlutoData.Collections;
 
 namespace PlutoData.Interface
 {
+
+    public interface IRepository { }
+
     /// <summary>
     /// 泛型仓储接口
     /// </summary>
     /// <typeparam name="TEntity"></typeparam>
-    public interface IRepository<TEntity> where TEntity : class
+    public interface IRepository<TEntity>: IRepository where TEntity : class
     {
         /// <summary>
         /// 切换表
@@ -210,13 +213,6 @@ namespace PlutoData.Interface
         /// <returns>找到的实体或为null</returns>
         TEntity Find(params object[] keyValues);
 
-        /// <summary>
-        /// 查找具有给定主键值的实体。如果找到，则附加到上下文并返回。如果未找到实体，则返回null。
-        /// </summary>
-        /// <param name="keyValues">要找到的实体的主键值</param>
-        /// <param name="cancellationToken"></param>
-        /// <returns>A <see cref="Task{TEntity}"/></returns>
-        ValueTask<TEntity> FindAsync(CancellationToken cancellationToken = default, params object[] keyValues);
 
         /// <summary>
         /// Finds an entity with the given primary key values. If found, is attached to the context and returned. If no entity is found, then null is returned.

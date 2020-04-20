@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -35,7 +36,6 @@ namespace apisample.Controllers
 
 
             //userRepo.ChangeTable("Blogs_10086");
-
             var blog10086 = new Blog
             {
                 Id = (int)DateTime.Now.Ticks % 100,
@@ -44,7 +44,7 @@ namespace apisample.Controllers
             };
             _customBlogRepository.Insert(blog10086);
 
-            await _unitOfWork.SaveChangesAsync(true);
+            _unitOfWork.SaveChanges();
 
 
             //userRepo.ChangeTable("Blogs_10087");
@@ -56,7 +56,7 @@ namespace apisample.Controllers
             };
             _customBlogRepository.Insert(blog10087);
 
-            await _unitOfWork.SaveChangesAsync(true);
+            await _unitOfWork.SaveChangesAsync();
 
 
             return await _customBlogRepository.GetAllAsync(include: source => source.Include(blog => blog.Posts).ThenInclude(post => post.Comments));
@@ -99,7 +99,7 @@ namespace apisample.Controllers
         [HttpGet("{id}")]
         public async Task<Blog> Get(int id)
         {
-            return await _customBlogRepository.FindAsync(id);
+            return await _customBlogRepository.FindAsync(new object[]{id});
         }
 
 

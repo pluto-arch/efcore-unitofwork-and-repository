@@ -452,8 +452,6 @@ namespace PlutoData
         /// <inheritdoc />
         public virtual TEntity Find(params object[] keyValues) => _dbSet.Find(keyValues);
 
-        /// <inheritdoc />
-        public virtual ValueTask<TEntity> FindAsync(CancellationToken cancellationToken = default, params object[] keyValues) => _dbSet.FindAsync(keyValues, cancellationToken);
 
         /// <inheritdoc />
         public virtual ValueTask<TEntity> FindAsync(object[] keyValues, CancellationToken cancellationToken = default) => _dbSet.FindAsync(keyValues, cancellationToken);
