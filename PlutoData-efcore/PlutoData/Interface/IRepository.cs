@@ -21,17 +21,6 @@ namespace PlutoData.Interface
     public interface IRepository<TEntity>: IRepository where TEntity : class
     {
         /// <summary>
-        /// 切换表
-        /// <para>一般根据分表路由确定</para>
-        /// </summary>
-        /// <param name="table"></param>
-        /// <remarks>
-        /// 适用于一个Entity对应多个表
-        /// </remarks>
-        void ChangeTable(string table);
-
-
-        /// <summary>
         /// 获取分页数据 <see cref="IPagedList{T}"/> 。默认无追踪
         /// </summary>
         /// <param name="predicate">查询条件</param>

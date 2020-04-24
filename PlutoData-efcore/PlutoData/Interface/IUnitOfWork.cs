@@ -15,12 +15,6 @@ namespace PlutoData.Interface
         /// </summary>
         bool HasActiveTransaction { get; }
 
-        /// <summary>
-        /// 切换数据库
-        /// <para>待完善</para>
-        /// </summary>
-        /// <param name="database"></param>
-        void ChangeDatabase(string database);
 
         /// <summary>
         ///  获取仓储

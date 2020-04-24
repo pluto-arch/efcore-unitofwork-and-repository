@@ -44,30 +44,7 @@ namespace PlutoData
             get { return _currentTransaction != null; }
         }
 
-        /// <inheritdoc />
-        public void ChangeDatabase(string database)
-        {
-            var connection = _context.Database.GetDbConnection();
-            if (connection.State.HasFlag(ConnectionState.Open))
-            {
-                connection.ChangeDatabase(database);
-            }
-            else
-            {
-                var connectionString = Regex.Replace(connection.ConnectionString, @"(?<=[Dd]atabase=)\w+(?=;)", database, RegexOptions.Singleline);
-                connection.ConnectionString = connectionString;
-            }
-            // mysql schema 就是数据库
-            //var items = _context.Model.GetEntityTypes();
-            //foreach (var item in items)
-            //{
-            //    if (item is IConventionEntityType entityType)
-            //    {
-            //        entityType.SetSchema(database);
-            //    }
-            //}
-        }
-
+       
 
         /// <inheritdoc />
         public TRepository GetRepository<TRepository>() where TRepository: IRepository
