@@ -33,39 +33,6 @@ namespace PlutoData
             _dbSet = _dbContext.Set<TEntity>();
         }
 
-        ///// <inheritdoc />
-        //public virtual void ChangeTable(string table)
-        //{
-        //    var entityType = _dbContext.Model.FindEntityType(typeof(TEntity));
-        //    try
-        //    {
-        //        if (entityType is IConventionEntityType relational)
-        //        {
-        //            relational.Builder.ToTable(table);
-        //            _dbContext.Database.Migrate();
-        //            relational.SetTableName(table, true);
-        //        }
-        //    }
-        //    catch (NullReferenceException ex)
-        //    {
-        //        // 表不存在 暂时无发动态创建
-        //        //var conn = _dbContext.Database.GetDbConnection();
-        //        //using (conn)
-        //        //{
-        //        //    var command = conn.CreateCommand();
-        //        //    command.CommandText = $@"";
-        //        //    command.CommandType = CommandType.Text;
-        //        //    command.ExecuteNonQuery();
-        //        //}
-
-        //        throw;
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw;
-        //    }
-
-        //}
 
         /// <inheritdoc />
         public IQueryable<TEntity> GetAll()
