@@ -14,20 +14,21 @@ namespace PlutoData.Collections
        
         public int TotalCount { get; set; }
        
-        public int TotalPages { get; set; }
 
       
         public IList<T> Items { get; set; }
 
-      
-        public bool HasPreviousPage => PageIndex - 1 > 0;
-
-       
-        public bool HasNextPage => PageIndex  < TotalPages;
 
 
         internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize)
         {
+            if (source==null)
+            {
+                PageIndex = default;
+                PageSize = default;
+                TotalCount = default;
+                Items = default;
+            }
             if (pageIndex<1)
             {
                 throw new ArgumentException($"页码不能小于1");
@@ -38,8 +39,6 @@ namespace PlutoData.Collections
                 PageIndex = pageIndex;
                 PageSize = pageSize;
                 TotalCount = querable.Count();
-                TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-
                 Items = querable.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
             }
             else
@@ -47,8 +46,6 @@ namespace PlutoData.Collections
                 PageIndex = pageIndex;
                 PageSize = pageSize;
                 TotalCount = source.Count();
-                TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-
                 Items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
             }
         }
@@ -67,20 +64,21 @@ namespace PlutoData.Collections
      
         public int TotalCount { get; }
        
-        public int TotalPages { get; }
 
       
         public IList<TResult> Items { get; }
 
-        
-        public bool HasPreviousPage => PageIndex - 1 > 0;
-
-      
-        public bool HasNextPage => PageIndex < TotalPages;
 
       
         public PagedList(IEnumerable<TSource> source, Func<IEnumerable<TSource>, IEnumerable<TResult>> converter, int pageIndex, int pageSize)
         {
+            if (source == null)
+            {
+                PageIndex = default;
+                PageSize = default;
+                TotalCount = default;
+                Items = default;
+            }
             if (pageIndex < 1)
             {
                 throw new ArgumentException($"页码不能小于1");
@@ -91,10 +89,7 @@ namespace PlutoData.Collections
                 PageIndex = pageIndex;
                 PageSize = pageSize;
                 TotalCount = querable.Count();
-                TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-
                 var items = querable.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToArray();
-
                 Items = new List<TResult>(converter(items));
             }
             else
@@ -102,10 +97,7 @@ namespace PlutoData.Collections
                 PageIndex = pageIndex;
                 PageSize = pageSize;
                 TotalCount = source.Count();
-                TotalPages = (int)Math.Ceiling(TotalCount / (double)PageSize);
-
                 var items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToArray();
-
                 Items = new List<TResult>(converter(items));
             }
         }
@@ -116,8 +108,6 @@ namespace PlutoData.Collections
             PageIndex = source.PageIndex;
             PageSize = source.PageSize;
             TotalCount = source.TotalCount;
-            TotalPages = source.TotalPages;
-
             Items = new List<TResult>(converter(source.Items));
         }
     }

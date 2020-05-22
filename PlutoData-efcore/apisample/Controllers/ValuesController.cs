@@ -33,28 +33,33 @@ namespace apisample.Controllers
         {
 
             //_unitOfWork.ChangeDatabase("PlutoDataDemo_2020");
+            var blog2 = new Blog
+            {
+                Id = (int)DateTime.Now.Ticks,
+                Url = "1212",
+                Title = "12312"
+            };
+            _customBlogRepository.Insert(blog2);
 
+            Thread.Sleep(1000);
 
-            //userRepo.ChangeTable("Blogs_10086");
             var blog10086 = new Blog
             {
-                Id = (int)DateTime.Now.Ticks % 100,
+                Id = (int)DateTime.Now.Ticks,
                 Url = "1212",
                 Title = "12312"
             };
             _customBlogRepository.Insert(blog10086);
 
-            _unitOfWork.SaveChanges();
 
-
-            //userRepo.ChangeTable("Blogs_10087");
-            var blog10087 = new Blog
-            {
-                Id = (int)DateTime.Now.Ticks % 10,
-                Url = "1212",
-                Title = "12312"
-            };
-            _customBlogRepository.Insert(blog10087);
+            //_customBlogRepository.ChangeTable("Blogs_10087");
+            //var blog10087 = new Blog
+            //{
+            //    Id = (int)(DateTime.Now.Ticks % 10),
+            //    Url = "1212",
+            //    Title = "12312"
+            //};
+            //_customBlogRepository.Insert(blog10087);
 
             await _unitOfWork.SaveChangesAsync();
 
@@ -68,6 +73,43 @@ namespace apisample.Controllers
         [HttpGet("Page/{pageIndex}/{pageSize}")]
         public async Task<IPagedList<Blog>> Get(int pageIndex, int pageSize)
         {
+
+            try
+            {
+                var strategy = _unitOfWork.CreateExecutionStrategy();
+                await strategy.ExecuteAsync(async () =>
+                {
+                    Guid transactionId;
+                    using (var transaction = await _unitOfWork.BeginTransactionAsync())
+                    {
+                        var blog2 = new Blog
+                        {
+                            Id = (int)DateTime.Now.Ticks,
+                            Url = "1212",
+                            Title = "12312"
+                        };
+                        _customBlogRepository.Insert(blog2);
+                        await _unitOfWork.SaveChangesAsync();
+                        Thread.Sleep(1000);
+
+                        var blog10086 = new Blog
+                        {
+                            Id = (int)DateTime.Now.Ticks,
+                            Url = "1212",
+                            Title = "12312"
+                        };
+                        _customBlogRepository.Insert(blog10086);
+
+                        await _unitOfWork.CommitTransactionAsync(transaction);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+
+
             // projection
             var items = _customBlogRepository.GetPagedList(b => new { Name = b.Title, Link = b.Url });
 
@@ -99,7 +141,7 @@ namespace apisample.Controllers
         [HttpGet("{id}")]
         public async Task<Blog> Get(int id)
         {
-            return await _customBlogRepository.FindAsync(new object[]{id});
+            return await _customBlogRepository.FindAsync(new object[] { id });
         }
 
 

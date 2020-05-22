@@ -66,7 +66,6 @@ namespace PlutoData.Collections
                 PageSize = pageSize,
                 TotalCount = count,
                 Items = items,
-                TotalPages = (int)Math.Ceiling(count / (double)pageSize)
             };
 
             return pagedList;
