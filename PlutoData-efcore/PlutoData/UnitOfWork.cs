@@ -74,21 +74,6 @@ namespace PlutoData
 
 
 
-        #region 触发领域事件的savechange
-        /// <inheritdoc />
-        public void SaveEntityChanges(Action dispatchDomainEvent = null)
-        {
-            dispatchDomainEvent?.Invoke();
-            _context.SaveChanges();
-        }
-
-        /// <inheritdoc />
-        public async Task<int> SaveEntityChangesAsync(Action dispatchDomainEvent = null,CancellationToken cancellationToken=default)
-        {
-            dispatchDomainEvent?.Invoke();
-            return await _context.SaveChangesAsync(cancellationToken);
-        }
-
         /// <inheritdoc />
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks)
         {
@@ -107,8 +92,6 @@ namespace PlutoData
                 return count;
             }
         }
-
-        #endregion
 
 
         /// <inheritdoc />

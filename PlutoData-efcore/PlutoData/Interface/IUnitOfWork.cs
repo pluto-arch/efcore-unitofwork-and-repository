@@ -78,20 +78,6 @@ namespace PlutoData.Interface
         /// <returns></returns>
         IDbContextTransaction GetCurrentTransaction();
 
-        /// <summary>
-        /// 触发领域事件的保存更改
-        /// </summary>
-        /// <param name="dispatchDomainEvent"></param>
-        void SaveEntityChanges(Action dispatchDomainEvent = null);
-        /// <summary>
-        /// 触发领域事件的保存更改--异步
-        /// </summary>
-        /// <param name="dispatchDomainEvent"></param>
-        /// <param name="cancellationToken"></param>
-        /// <returns></returns>
-        Task<int> SaveEntityChangesAsync(Action dispatchDomainEvent = null, CancellationToken cancellationToken = default);
-
-
 
         /// <summary>
         /// 保存更改

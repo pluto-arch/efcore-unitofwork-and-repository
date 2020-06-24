@@ -31,34 +31,6 @@ namespace apisample.Controllers
         [HttpGet]
         public async Task<IList<Blog>> Get()
         {
-
-            //_unitOfWork.ChangeDatabase("PlutoDataDemo_2020");
-
-
-            //userRepo.ChangeTable("Blogs_10086");
-            var blog10086 = new Blog
-            {
-                Id = (int)DateTime.Now.Ticks % 100,
-                Url = "1212",
-                Title = "12312"
-            };
-            _customBlogRepository.Insert(blog10086);
-
-            _unitOfWork.SaveChanges();
-
-
-            //userRepo.ChangeTable("Blogs_10087");
-            var blog10087 = new Blog
-            {
-                Id = (int)DateTime.Now.Ticks % 10,
-                Url = "1212",
-                Title = "12312"
-            };
-            _customBlogRepository.Insert(blog10087);
-
-            await _unitOfWork.SaveChangesAsync();
-
-
             return await _customBlogRepository.GetAllAsync(include: source => source.Include(blog => blog.Posts).ThenInclude(post => post.Comments));
         }
 
@@ -111,6 +83,37 @@ namespace apisample.Controllers
             await _unitOfWork.SaveChangesAsync();
         }
 
+
+
+        /*
+         * 
+
+            //_unitOfWork.ChangeDatabase("PlutoDataDemo_2020");
+
+
+            //userRepo.ChangeTable("Blogs_10086");
+            var blog10086 = new Blog
+            {
+                Id = (int)DateTime.Now.Ticks % 100,
+                Url = "1212",
+                Title = "12312"
+            };
+            _customBlogRepository.Insert(blog10086);
+
+            _unitOfWork.SaveChanges();
+
+
+            //userRepo.ChangeTable("Blogs_10087");
+            var blog10087 = new Blog
+            {
+                Id = (int)DateTime.Now.Ticks % 10,
+                Url = "1212",
+                Title = "12312"
+            };
+            _customBlogRepository.Insert(blog10087);
+
+            await _unitOfWork.SaveChangesAsync();
+         */
 
 
     }
