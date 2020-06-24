@@ -492,12 +492,6 @@ namespace PlutoData
         public virtual ValueTask<EntityEntry<TEntity>> InsertAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken))
         {
             return _dbSet.AddAsync(entity, cancellationToken);
-
-            // Shadow properties?
-            //var property = _dbContext.Entry(entity).Property("Created");
-            //if (property != null) {
-            //property.CurrentValue = DateTime.Now;
-            //}
         }
 
         /// <inheritdoc />
@@ -570,7 +564,7 @@ namespace PlutoData
                 query = query.AsNoTracking();
             }
 
-            if (include != null)
+            if (include != null)       
             {
                 query = include(query);
             }

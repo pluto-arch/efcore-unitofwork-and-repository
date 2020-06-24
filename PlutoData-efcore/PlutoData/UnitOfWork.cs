@@ -56,8 +56,6 @@ namespace PlutoData
 
 
 
-
-
         /// <inheritdoc />
         public IExecutionStrategy CreateExecutionStrategy()
         {

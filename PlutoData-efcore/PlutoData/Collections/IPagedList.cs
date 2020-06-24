@@ -20,26 +20,11 @@ namespace PlutoData.Collections
         /// </summary>
         int TotalCount { get; }
 
-        /// <summary>
-        /// Gets the total pages.
-        /// </summary>
-        int TotalPages { get; }
 
         /// <summary>
         /// Gets the current page items.
         /// </summary>
         IList<T> Items { get; }
 
-        /// <summary>
-        /// Gets the has previous page.
-        /// </summary>
-        /// <value>The has previous page.</value>
-        bool HasPreviousPage { get; }
-
-        /// <summary>
-        /// Gets the has next page.
-        /// </summary>
-        /// <value>The has next page.</value>
-        bool HasNextPage { get; }
     }
 }

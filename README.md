@@ -13,6 +13,10 @@ services.AddDbContext<BloggingContext>(opt =>
                 .AddUnitOfWork<BloggingContext>().AddRepository();
 ```
 `AddRepository()  可选。默认使用程序集扫描。不适用这个的化，请自行注入仓储`
+
+仓储的使用：
+接口继承自：: `IRepository<TEntity>` 实现类继承自：`Repository<TEntity>` 通用仓储已有常用CRUD操作，如另有需求请自行添加
+
 ```csharp
 public static IServiceCollection AddRepository(this IServiceCollection services)
         {
