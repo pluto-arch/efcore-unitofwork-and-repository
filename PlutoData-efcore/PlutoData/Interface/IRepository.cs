@@ -12,7 +12,10 @@ using PlutoData.Collections;
 namespace PlutoData.Interface
 {
 
-    public interface IRepository { }
+    public interface IRepository
+    {
+
+    }
 
     /// <summary>
     /// 泛型仓储接口
@@ -20,6 +23,12 @@ namespace PlutoData.Interface
     /// <typeparam name="TEntity"></typeparam>
     public interface IRepository<TEntity>: IRepository where TEntity : class
     {
+        /// <summary>
+        /// 分表路由key
+        /// 默认规则:TEntity_{RouteKey}
+        /// </summary>
+        string RouteKey { get; set; }
+
         /// <summary>
         /// 获取分页数据 <see cref="IPagedList{T}"/> 。默认无追踪
         /// </summary>

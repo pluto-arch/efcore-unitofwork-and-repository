@@ -22,6 +22,19 @@ namespace PlutoData
     {
         protected readonly DbContext _dbContext;
         protected DbSet<TEntity> _dbSet;
+        private string _routeKey;
+
+        public string RouteKey
+        {
+            get => _routeKey;
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                    this.ChangeTable($"{_routeKey}");
+                else
+                    this.ChangeTable($"{_routeKey}_{value}");
+            }
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Repository{TEntity}"/> class.
@@ -31,6 +44,34 @@ namespace PlutoData
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _dbSet = _dbContext.Set<TEntity>();
+            var mapping = dbContext.Model.FindEntityType(typeof(TEntity));
+            var tableName = mapping.GetTableName();
+            _routeKey = $"{tableName}";
+        }
+
+        
+        internal void ChangeTable(string table)
+        {
+            var entityType = _dbContext.Model.FindEntityType(typeof(TEntity));
+            try
+            {
+                if (entityType is IConventionEntityType relational)
+                {
+                    relational.SetTableName(table, true);
+                }
+            }
+            catch (NullReferenceException ex)
+            {
+                // efcore model cache key缓存 原因
+                if (entityType is IConventionEntityType relational)
+                {
+                    relational.SetTableName(table, true);
+                }
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
         }
 
 

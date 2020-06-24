@@ -31,6 +31,32 @@ namespace apisample.Controllers
         [HttpGet]
         public async Task<IList<Blog>> Get()
         {
+            using (var tran=await _unitOfWork.BeginTransactionAsync())
+            {
+                try
+                {
+                    _customBlogRepository.Insert(new Blog
+                    {
+                        Url = "99999999999999999999",
+                        Title = "498733333353953",
+                    });
+                    _unitOfWork.SaveChanges(); // 主表
+                    var blog10086 = new Blog
+                    {
+                        Url = "555555555555555555",
+                        Title = "4444444444"
+                    };
+                    _customBlogRepository.RouteKey = "1001";
+                    _customBlogRepository.Insert(blog10086);
+                    _unitOfWork.SaveChanges(); // 分表
+                    await tran.CommitAsync();
+                }
+                catch (Exception e)
+                {
+                   await tran.RollbackAsync();
+                }
+            }
+
             return await _customBlogRepository.GetAllAsync(include: source => source.Include(blog => blog.Posts).ThenInclude(post => post.Comments));
         }
 
