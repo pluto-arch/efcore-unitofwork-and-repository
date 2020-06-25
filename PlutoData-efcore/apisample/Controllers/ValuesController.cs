@@ -37,13 +37,13 @@ namespace apisample.Controllers
                 {
                     _customBlogRepository.Insert(new Blog
                     {
-                        Url = "99999999999999999999",
+                        Url = "Normal_"+new Random().Next(100,999),
                         Title = "498733333353953",
                     });
                     _unitOfWork.SaveChanges(); // 主表
                     var blog10086 = new Blog
                     {
-                        Url = "555555555555555555",
+                        Url = "1001_" + new Random().Next(100, 999),
                         Title = "4444444444"
                     };
                     _customBlogRepository.RouteKey = "1001";
@@ -53,6 +53,7 @@ namespace apisample.Controllers
                 }
                 catch (Exception e)
                 {
+                    _logger.LogError(e,e.Message);
                    await tran.RollbackAsync();
                 }
             }
@@ -66,44 +67,6 @@ namespace apisample.Controllers
         [HttpGet("Page/{pageIndex}/{pageSize}")]
         public async Task<IPagedList<Blog>> Get(int pageIndex, int pageSize)
         {
-
-            try
-            {
-                var strategy = _unitOfWork.CreateExecutionStrategy();
-                await strategy.ExecuteAsync(async () =>
-                {
-                    Guid transactionId;
-                    using (var transaction = await _unitOfWork.BeginTransactionAsync())
-                    {
-                        var blog2 = new Blog
-                        {
-                            Id = (int)DateTime.Now.Ticks,
-                            Url = "1212",
-                            Title = "12312"
-                        };
-                        _customBlogRepository.Insert(blog2);
-                        await _unitOfWork.SaveChangesAsync();
-                        Thread.Sleep(1000);
-
-                        var blog10086 = new Blog
-                        {
-                            Id = (int)DateTime.Now.Ticks,
-                            Url = "1212",
-                            Title = "12312"
-                        };
-                        _customBlogRepository.Insert(blog10086);
-
-                        await _unitOfWork.CommitTransactionAsync(transaction);
-                    }
-                });
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-            }
-
-
-            // projection
             var items = _customBlogRepository.GetPagedList(b => new { Name = b.Title, Link = b.Url });
 
             return await _customBlogRepository.GetPagedListAsync(pageIndex: pageIndex, pageSize: pageSize);
@@ -137,12 +100,51 @@ namespace apisample.Controllers
             return await _customBlogRepository.FindAsync(new object[] { id });
         }
 
+        [HttpPost("/v1/post")]
+        public async Task<IActionResult> PostV1()
+        {
+            var blog2 = new Blog
+            {
+                Url = "Normal_"+new Random().Next(100,999),
+                Title = "12312"
+            };
+            _customBlogRepository.Insert(blog2);
+            await _unitOfWork.SaveChangesAsync();
+            return Ok("123");
+        }
 
         // POST api/values
         [HttpPost]
         public async Task Post([FromBody]Blog value)
         {
-            _customBlogRepository.Insert(value);
+            try
+            {
+                var strategy = _unitOfWork.CreateExecutionStrategy();
+                await strategy.ExecuteAsync(async () =>
+                {
+                    Guid transactionId;
+                    using (var transaction = await _unitOfWork.BeginTransactionAsync())
+                    {
+                        var blog2 = new Blog
+                        {
+                            Id = (int)DateTime.Now.Ticks,
+                            Url = "1212",
+                            Title = "12312"
+                        };
+                        _customBlogRepository.Insert(blog2);
+                        await _unitOfWork.SaveChangesAsync();
+                        Thread.Sleep(1000);
+
+                        _customBlogRepository.Insert(value);
+                        await _unitOfWork.SaveChangesAsync();
+                        await _unitOfWork.CommitTransactionAsync(transaction);
+                    }
+                });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
             await _unitOfWork.SaveChangesAsync();
         }
 

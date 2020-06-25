@@ -27,7 +27,7 @@ namespace PlutoData.Interface
         /// 分表路由key
         /// 默认规则:TEntity_{RouteKey}
         /// </summary>
-        string RouteKey { get; set; }
+        string RouteKey { set; }
 
         /// <summary>
         /// 获取分页数据 <see cref="IPagedList{T}"/> 。默认无追踪

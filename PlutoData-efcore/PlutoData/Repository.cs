@@ -22,17 +22,16 @@ namespace PlutoData
     {
         protected readonly DbContext _dbContext;
         protected DbSet<TEntity> _dbSet;
-        private string _routeKey;
+        private string _tableName;
 
         public string RouteKey
         {
-            get => _routeKey;
             set
             {
                 if (string.IsNullOrEmpty(value))
-                    this.ChangeTable($"{_routeKey}");
+                    this.ChangeTable($"{_tableName}");
                 else
-                    this.ChangeTable($"{_routeKey}_{value}");
+                    this.ChangeTable($"{_tableName}_{value}");
             }
         }
 
@@ -46,7 +45,16 @@ namespace PlutoData
             _dbSet = _dbContext.Set<TEntity>();
             var mapping = dbContext.Model.FindEntityType(typeof(TEntity));
             var tableName = mapping.GetTableName();
-            _routeKey = $"{tableName}";
+            var array = tableName.Split('_');
+            if (array.Length>1)
+            {
+                ChangeTable(array[0]);
+                _tableName = array[0];
+            }
+            else
+            {
+                _tableName = tableName;
+            }
         }
 
         
@@ -57,7 +65,7 @@ namespace PlutoData
             {
                 if (entityType is IConventionEntityType relational)
                 {
-                    relational.SetTableName(table, true);
+                    relational.SetTableName(table);
                 }
             }
             catch (NullReferenceException ex)
@@ -65,7 +73,7 @@ namespace PlutoData
                 // efcore model cache key缓存 原因
                 if (entityType is IConventionEntityType relational)
                 {
-                    relational.SetTableName(table, true);
+                    relational.SetTableName(table);
                 }
             }
             catch (Exception e)
