@@ -46,7 +46,6 @@ namespace apisample.Controllers
                         Url = "1001_" + new Random().Next(100, 999),
                         Title = "4444444444"
                     };
-                    _customBlogRepository.RouteKey = "1001";
                     _customBlogRepository.Insert(blog10086);
                     _unitOfWork.SaveChanges(); // 分表
                     await tran.CommitAsync();
