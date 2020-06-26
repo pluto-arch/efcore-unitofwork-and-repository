@@ -24,16 +24,16 @@ namespace PlutoData
         protected DbSet<TEntity> _dbSet;
         private string _tableName;
 
-        public string RouteKey
-        {
-            set
-            {
-                if (string.IsNullOrEmpty(value))
-                    this.ChangeTable($"{_tableName}");
-                else
-                    this.ChangeTable($"{_tableName}_{value}");
-            }
-        }
+        //public string RouteKey
+        //{
+        //    set
+        //    {
+        //        if (string.IsNullOrEmpty(value))
+        //            this.ChangeTable($"{_tableName}");
+        //        else
+        //            this.ChangeTable($"{_tableName}_{value}");
+        //    }
+        //}
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Repository{TEntity}"/> class.
@@ -43,6 +43,7 @@ namespace PlutoData
         {
             _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
             _dbSet = _dbContext.Set<TEntity>();
+            /*
             var mapping = dbContext.Model.FindEntityType(typeof(TEntity));
             var tableName = mapping.GetTableName();
             var array = tableName.Split('_');
@@ -54,33 +55,33 @@ namespace PlutoData
             else
             {
                 _tableName = tableName;
-            }
+            }*/
         }
 
         
-        internal void ChangeTable(string table)
-        {
-            var entityType = _dbContext.Model.FindEntityType(typeof(TEntity));
-            try
-            {
-                if (entityType is IConventionEntityType relational)
-                {
-                    relational.SetTableName(table);
-                }
-            }
-            catch (NullReferenceException ex)
-            {
-                // efcore model cache key缓存 原因
-                if (entityType is IConventionEntityType relational)
-                {
-                    relational.SetTableName(table);
-                }
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
-        }
+        //internal void ChangeTable(string table)
+        //{
+        //    var entityType = _dbContext.Model.FindEntityType(typeof(TEntity));
+        //    try
+        //    {
+        //        if (entityType is IConventionEntityType relational)
+        //        {
+        //            relational.SetTableName(table);
+        //        }
+        //    }
+        //    catch (NullReferenceException ex)
+        //    {
+        //        // efcore model cache key缓存 原因
+        //        if (entityType is IConventionEntityType relational)
+        //        {
+        //            relational.SetTableName(table);
+        //        }
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        throw;
+        //    }
+        //}
 
 
         /// <inheritdoc />
