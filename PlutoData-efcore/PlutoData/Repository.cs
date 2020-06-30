@@ -20,69 +20,18 @@ namespace PlutoData
 {
     public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
     {
-        protected readonly DbContext _dbContext;
+        protected DbContext _dbContext;
         protected DbSet<TEntity> _dbSet;
-        private string _tableName;
 
-        //public string RouteKey
-        //{
-        //    set
-        //    {
-        //        if (string.IsNullOrEmpty(value))
-        //            this.ChangeTable($"{_tableName}");
-        //        else
-        //            this.ChangeTable($"{_tableName}_{value}");
-        //    }
-        //}
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Repository{TEntity}"/> class.
-        /// </summary>
-        /// <param name="dbContext">The database context.</param>
-        public Repository(DbContext dbContext)
+        public DbContext DbContext
         {
-            _dbContext = dbContext ?? throw new ArgumentNullException(nameof(dbContext));
-            _dbSet = _dbContext.Set<TEntity>();
-            /*
-            var mapping = dbContext.Model.FindEntityType(typeof(TEntity));
-            var tableName = mapping.GetTableName();
-            var array = tableName.Split('_');
-            if (array.Length>1)
+            get => _dbContext;
+            set
             {
-                ChangeTable(array[0]);
-                _tableName = array[0];
+                _dbContext = value;
+                _dbSet = _dbContext.Set<TEntity>();
             }
-            else
-            {
-                _tableName = tableName;
-            }*/
         }
-
-        
-        //internal void ChangeTable(string table)
-        //{
-        //    var entityType = _dbContext.Model.FindEntityType(typeof(TEntity));
-        //    try
-        //    {
-        //        if (entityType is IConventionEntityType relational)
-        //        {
-        //            relational.SetTableName(table);
-        //        }
-        //    }
-        //    catch (NullReferenceException ex)
-        //    {
-        //        // efcore model cache key缓存 原因
-        //        if (entityType is IConventionEntityType relational)
-        //        {
-        //            relational.SetTableName(table);
-        //        }
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        throw;
-        //    }
-        //}
-
 
         /// <inheritdoc />
         public IQueryable<TEntity> GetAll()

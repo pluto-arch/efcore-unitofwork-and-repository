@@ -21,7 +21,7 @@ namespace PlutoData.Interface
         /// </summary>
         /// <typeparam name="TRepository"></typeparam>
         /// <returns></returns>
-        TRepository GetRepository<TRepository>() where TRepository: IRepository;
+        TRepository GetRepository<TRepository>() where TRepository :IRepository;
 
         /// <summary>
         /// 返回一个数据库执行策略

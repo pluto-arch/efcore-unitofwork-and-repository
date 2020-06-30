@@ -5,7 +5,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.Logging;
 using PlutoData.Collections;
 using PlutoData.Interface;
@@ -35,19 +37,10 @@ namespace apisample.Controllers
             {
                 try
                 {
-                    _customBlogRepository.Insert(new Blog
-                    {
-                        Url = "Normal_"+new Random().Next(100,999),
-                        Title = "498733333353953",
-                    });
-                    _unitOfWork.SaveChanges(); // 主表
-                    var blog10086 = new Blog
-                    {
-                        Url = "1001_" + new Random().Next(100, 999),
-                        Title = "4444444444"
-                    };
-                    _customBlogRepository.Insert(blog10086);
-                    _unitOfWork.SaveChanges(); // 分表
+
+                    var commandText = "  update [PlutoDataDemo].[dbo].[Blogs_10013] set Title=@title";
+                    var parame = new SqlParameter("@title", "我要执行SQL语句");
+                    _unitOfWork.ExecuteSqlCommand(commandText, parame);
                     await tran.CommitAsync();
                 }
                 catch (Exception e)

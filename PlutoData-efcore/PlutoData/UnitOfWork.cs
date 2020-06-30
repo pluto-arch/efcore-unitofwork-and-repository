@@ -47,9 +47,14 @@ namespace PlutoData
        
 
         /// <inheritdoc />
-        public TRepository GetRepository<TRepository>() where TRepository: IRepository
+        public TRepository GetRepository<TRepository>() where TRepository:IRepository
         {
             var repository = _context.GetService<TRepository>();
+            if (repository==null)
+            {
+                throw new NullReferenceException($"{typeof(TRepository)} not register");
+            }
+            repository.DbContext= _context;
             return repository;
         }
 

@@ -34,7 +34,8 @@ namespace PlutoData.Test
         [Test]
         public async Task TestGetFirstOrDefaultAsyncGetsCorrectItem()
         {
-            var repository = new Repository<City>(db);
+            var repository = new Repository<City>();
+            repository.DbContext = db;
             var city = await repository.GetFirstOrDefaultAsync(predicate: t => t.Name == "A");
             Assert.NotNull(city);
             Assert.AreEqual(1, city.Id);
@@ -44,7 +45,8 @@ namespace PlutoData.Test
         [Test]
         public async Task TestGetFirstOrDefaultAsyncReturnsNullValue()
         {
-            var repository = new Repository<City>(db);
+            var repository = new Repository<City>();
+            repository.DbContext = db;
             var city = await repository.GetFirstOrDefaultAsync(predicate: t => t.Name == "Easy-E");
             Assert.Null(city);
         }
@@ -52,7 +54,8 @@ namespace PlutoData.Test
         [Test]
         public async Task TestGetFirstOrDefaultAsyncCanInclude()
         {
-            var repository = new Repository<City>(db);
+            var repository = new Repository<City>();
+            repository.DbContext = db;
             var city = await repository.GetFirstOrDefaultAsync(
                 predicate: c => c.Name == "A",
                 include: source => source.Include(t => t.Towns));
@@ -67,8 +70,8 @@ namespace PlutoData.Test
         [Test]
         public void GetPagedList()
         {
-            var repository = new Repository<City>(db);
-
+            var repository = new Repository<City>();
+            repository.DbContext = db;
             var page = repository.GetPagedList(predicate:null, include: source => source.Include(t => t.Country));
 
             Assert.NotNull(page.TotalCount==6);
