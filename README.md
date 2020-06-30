@@ -44,6 +44,14 @@ get repository
             _customBlogRepository = unitOfWork.GetRepository<ICustomBlogRepository>();
         }
 ```
-
+> 注意： ICustomBlogRepository的实现类中，构造函数需要传当前项目的dbcontext，而不是默认的dbcontext
+```csharp
+public class CategoryRepository: Repository<Category>,ICategoryRepository
+    {
+        public CategoryRepository(BlogCoreDbContext dbContext) : base(dbContext)
+        {
+        }
+    }
+```
 
 
