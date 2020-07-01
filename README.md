@@ -33,7 +33,17 @@ public static IServiceCollection AddRepository(this IServiceCollection services)
             return services;
         }
 ```
-get repository
+
+自定义仓储：
+```csharp
+public class CategoryRepository: Repository<Category>,ICategoryRepository
+    {
+        public CategoryRepository() : base()
+        {
+        }
+    }
+```
+获取自定义仓储
 ```csharp
         private readonly IUnitOfWork<BloggingContext> _unitOfWork;
         private readonly ICustomBlogRepository _customBlogRepository;
@@ -44,14 +54,4 @@ get repository
             _customBlogRepository = unitOfWork.GetRepository<ICustomBlogRepository>();
         }
 ```
-> 注意： ICustomBlogRepository的实现类中，构造函数需要传当前项目的dbcontext，而不是默认的dbcontext
-```csharp
-public class CategoryRepository: Repository<Category>,ICategoryRepository
-    {
-        public CategoryRepository() : base()
-        {
-        }
-    }
-```
-
 
