@@ -48,7 +48,7 @@ get repository
 ```csharp
 public class CategoryRepository: Repository<Category>,ICategoryRepository
     {
-        public CategoryRepository(BlogCoreDbContext dbContext) : base(dbContext)
+        public CategoryRepository() : base()
         {
         }
     }
