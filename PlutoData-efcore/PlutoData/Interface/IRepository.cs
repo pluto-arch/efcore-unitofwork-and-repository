@@ -14,6 +14,12 @@ namespace PlutoData.Interface
 
     public interface IRepository
     {
+        /// <summary>
+        /// dbcontext
+        /// </summary>
+        /// <remarks>
+        /// 只能由unitofwork初始化
+        /// </remarks>
         DbContext DbContext { get; set; }
     }
 
@@ -23,6 +29,10 @@ namespace PlutoData.Interface
     /// <typeparam name="TEntity"></typeparam>
     public interface IRepository<TEntity>: IRepository where TEntity : class
     {
+        /// <summary>
+        /// 实体映射的表名
+        /// </summary>
+        string EntityMapName { get; }
 
         /// <summary>
         /// 获取分页数据 <see cref="IPagedList{T}"/> 。默认无追踪

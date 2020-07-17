@@ -18,9 +18,18 @@ namespace PlutoData.Test
     }
 
 
+    public class InMemory2Context : DbContext
+    {
+        public DbSet<Country> Countries { get; set; }
+        public DbSet<Customer> Customers { get; set; }
 
 
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            optionsBuilder.UseInMemoryDatabase("test2");
+        }
 
+    }
 
 
 

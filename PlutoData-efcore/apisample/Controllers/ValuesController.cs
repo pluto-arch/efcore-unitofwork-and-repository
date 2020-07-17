@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Transactions;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.Logging;
+
 using PlutoData.Collections;
 using PlutoData.Interface;
 
@@ -19,34 +23,40 @@ namespace apisample.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly IUnitOfWork<BloggingContext> _unitOfWork;
+        private readonly IUnitOfWork<Blogging2Context> _unitOfWork2;
         private ILogger<ValuesController> _logger;
         private readonly ICustomBlogRepository _customBlogRepository;
 
-        public ValuesController(IUnitOfWork<BloggingContext> unitOfWork, ILogger<ValuesController> logger)
+        public ValuesController(
+            IUnitOfWork<BloggingContext> unitOfWork,
+            ILogger<ValuesController> logger,
+            IUnitOfWork<Blogging2Context> unitOfWork2)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
+            _unitOfWork2 = unitOfWork2;
             _customBlogRepository = unitOfWork.GetRepository<ICustomBlogRepository>();
+
+
+            var a_customBlogRepository = unitOfWork.GetBaseRepository<Blog>();
         }
 
         // GET api/values
-        [HttpGet]
-        public async Task<IList<Blog>> Get()
+        [HttpGet("BeginTransactionAsync")]
+        public async Task<IList<Blog>> BeginTransactionAsync()
         {
-            using (var tran=await _unitOfWork.BeginTransactionAsync())
+            using (var tran = await _unitOfWork.BeginTransactionAsync())
             {
                 try
                 {
-
-                    var commandText = "  update [PlutoDataDemo].[dbo].[Blogs_10013] set Title=@title";
-                    var parame = new SqlParameter("@title", "我要执行SQL语句");
-                    _unitOfWork.ExecuteSqlCommand(commandText, parame);
+                    var commandText = @$"INSERT INTO {_customBlogRepository.EntityMapName}([Url], [Title]) VALUES (N'Normal_55222', N'1231222');";
+                    _unitOfWork.ExecuteSqlCommand(commandText);
                     await tran.CommitAsync();
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e,e.Message);
-                   await tran.RollbackAsync();
+                    _logger.LogError(e, e.Message);
+                    await tran.RollbackAsync();
                 }
             }
 
@@ -56,18 +66,34 @@ namespace apisample.Controllers
 
 
         // GET api/values/Page/5/10
-        [HttpGet("Page/{pageIndex}/{pageSize}")]
-        public async Task<IPagedList<Blog>> Get(int pageIndex, int pageSize)
+        [HttpGet("MultipleDbContext")]
+        public IActionResult MultipleDbContext()
         {
-            var items = _customBlogRepository.GetPagedList(b => new { Name = b.Title, Link = b.Url });
 
-            return await _customBlogRepository.GetPagedListAsync(pageIndex: pageIndex, pageSize: pageSize);
+            var rep1 = _unitOfWork.GetRepository<ICustomBlogRepository>();
+            rep1.Insert(new Blog
+            {
+                Url = "_unitOfWork2",
+                Title = "_unitOfWork2",
+            });
+
+
+            var rep2 = _unitOfWork2.GetRepository<ICustomBlog2Repository>();
+            rep2.Insert(new Blog2
+            {
+                Url = "_unitOfWork2",
+                Title = "_unitOfWork2",
+            });
+
+            _unitOfWork.SaveChanges();
+            _unitOfWork2.SaveChanges();
+            return Ok("12312");
         }
 
 
         // GET api/values/Search/a1
-        [HttpGet("Search/{term}")]
-        public async Task<IPagedList<Blog>> Get(string term)
+        [HttpGet("QueryDemo")]
+        public async Task<IPagedList<Blog>> QueryDemo(string term)
         {
             _logger.LogInformation("demo about first or default with include");
 
@@ -92,22 +118,55 @@ namespace apisample.Controllers
             return await _customBlogRepository.FindAsync(new object[] { id });
         }
 
-        [HttpPost("/v1/post")]
-        public async Task<IActionResult> PostV1()
+        [HttpPost("GetRepository")]
+        public async Task<IActionResult> GetRepository()
         {
+
+            var first= _unitOfWork.GetRepository<ICustomBlogRepository>(); // 单独获取
+
+
+            var second = _unitOfWork.GetRepository<ICustomBlogRepository>(); // 单独获取
+
+
             var blog2 = new Blog
             {
-                Url = "Normal_"+new Random().Next(100,999),
+                Url = "Normal_" + new Random().Next(100, 999),
                 Title = "12312"
             };
-            _customBlogRepository.Insert(blog2);
+            _customBlogRepository.Insert(blog2); // 从构造函数中获取
+
+
+            var blog222 = new Blog
+            {
+                Url = "Normal_" + new Random().Next(100, 999),
+                Title = "12312"
+            };
+            first.Insert(blog222);
+
+
+            var blog312 = new Blog
+            {
+                Url = "Normal_" + new Random().Next(100, 999),
+                Title = "12312"
+            };
+            second.Insert(blog312);
+
+            #region MyRegion
+
+            //var ad = _customBlogRepository.DbContext;
+            //second.DbContext = ad; //will throw exception, 仓储的dbcontext 只能由unitofwork设置
+
+            #endregion
+
+
+
             await _unitOfWork.SaveChangesAsync();
             return Ok("123");
         }
 
         // POST api/values
         [HttpPost]
-        public async Task Post([FromBody]Blog value)
+        public async Task Post([FromBody] Blog value)
         {
             try
             {

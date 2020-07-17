@@ -17,4 +17,18 @@ namespace apisample
     public class CustomBlogRepository : Repository<Blog>, ICustomBlogRepository
     {
     }
+
+
+
+    public interface ICustomBlog2Repository : IRepository<Blog2>
+    {
+
+    }
+
+
+    public class CustomBlog2Repository : Repository<Blog2>, ICustomBlog2Repository
+    {
+    }
+
+
 }

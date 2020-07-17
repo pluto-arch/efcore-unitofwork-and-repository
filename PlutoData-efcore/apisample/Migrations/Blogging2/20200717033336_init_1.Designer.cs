@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using apisample;
 
-namespace apisample.Migrations
+namespace apisample.Migrations.Blogging2
 {
-    [DbContext(typeof(BloggingContext))]
-    [Migration("20200411143948_init")]
-    partial class init
+    [DbContext(typeof(Blogging2Context))]
+    [Migration("20200717033336_init_1")]
+    partial class init_1
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -21,38 +21,7 @@ namespace apisample.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("Microsoft.EntityFrameworkCore.AutoHistory", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<string>("Changed")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Kind")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RowId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(50)")
-                        .HasMaxLength(50);
-
-                    b.Property<string>("TableName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(128)")
-                        .HasMaxLength(128);
-
-                    b.HasKey("Id");
-
-                    b.ToTable("AutoHistory");
-                });
-
-            modelBuilder.Entity("apisample.Blog", b =>
+            modelBuilder.Entity("apisample.Blog2", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -70,7 +39,7 @@ namespace apisample.Migrations
                     b.ToTable("Blogs");
                 });
 
-            modelBuilder.Entity("apisample.Comment", b =>
+            modelBuilder.Entity("apisample.Comment2", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -80,7 +49,7 @@ namespace apisample.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PostId")
+                    b.Property<int?>("Post2Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -88,19 +57,19 @@ namespace apisample.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("Post2Id");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comment2");
                 });
 
-            modelBuilder.Entity("apisample.Post", b =>
+            modelBuilder.Entity("apisample.Post2", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("BlogId")
+                    b.Property<int?>("Blog2Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -111,23 +80,23 @@ namespace apisample.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BlogId");
+                    b.HasIndex("Blog2Id");
 
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("apisample.Comment", b =>
+            modelBuilder.Entity("apisample.Comment2", b =>
                 {
-                    b.HasOne("apisample.Post", null)
+                    b.HasOne("apisample.Post2", null)
                         .WithMany("Comments")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("Post2Id");
                 });
 
-            modelBuilder.Entity("apisample.Post", b =>
+            modelBuilder.Entity("apisample.Post2", b =>
                 {
-                    b.HasOne("apisample.Blog", null)
+                    b.HasOne("apisample.Blog2", null)
                         .WithMany("Posts")
-                        .HasForeignKey("BlogId");
+                        .HasForeignKey("Blog2Id");
                 });
 #pragma warning restore 612, 618
         }

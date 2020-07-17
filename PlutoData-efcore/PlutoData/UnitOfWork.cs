@@ -6,11 +6,13 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
+
 using PlutoData.Interface;
 
 
@@ -18,6 +20,7 @@ namespace PlutoData
 {
     public class UnitOfWork<TContext> : IUnitOfWork<TContext> where TContext : DbContext
     {
+        private Dictionary<Type, object> repositories;
         private readonly TContext _context;
         private bool disposed = false;
 
@@ -44,19 +47,54 @@ namespace PlutoData
             get { return _currentTransaction != null; }
         }
 
-       
+
 
         /// <inheritdoc />
-        public TRepository GetRepository<TRepository>() where TRepository:IRepository
+        public TRepository GetRepository<TRepository>() where TRepository : IRepository
         {
+            if (repositories == null)
+            {
+                repositories = new Dictionary<Type, object>();
+            }
+            var type = typeof(TRepository);
+            if (repositories.ContainsKey(type))
+            {
+                return (TRepository)repositories[type];
+            }
             var repository = _context.GetService<TRepository>();
-            if (repository==null)
+            if (repository == null)
             {
                 throw new NullReferenceException($"{typeof(TRepository)} not register");
             }
-            repository.DbContext= _context;
+            repository.DbContext = _context;
+            repositories[type] = repository;
             return repository;
         }
+
+
+        /// <inheritdoc />
+        public IRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new()
+        {
+            if (repositories == null)
+            {
+                repositories = new Dictionary<Type, object>();
+            }
+            var type = typeof(IRepository<TEntity>);
+            if (repositories.ContainsKey(type))
+            {
+                return (IRepository<TEntity>)repositories[type];
+            }
+            var repository = _context.GetService<IRepository<TEntity>>();
+            if (repository == null)
+            {
+                throw new NullReferenceException($"{typeof(IRepository<TEntity>)} not register");
+            }
+            repository.DbContext = _context;
+            repositories[type] = repository;
+            return repository;
+        }
+
+
 
 
 
@@ -104,7 +142,7 @@ namespace PlutoData
         }
 
         /// <inheritdoc />
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken=default)
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             return await _context.SaveChangesAsync(cancellationToken);
         }
@@ -125,7 +163,7 @@ namespace PlutoData
         }
 
         /// <inheritdoc />
-        public async Task CommitTransactionAsync(IDbContextTransaction transaction,CancellationToken cancellationToken = default)
+        public async Task CommitTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default)
         {
             if (transaction == null) throw new ArgumentNullException(nameof(transaction));
             if (transaction != _currentTransaction) throw new InvalidOperationException($"Transaction {transaction.TransactionId} is not current");

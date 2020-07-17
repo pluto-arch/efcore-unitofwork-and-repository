@@ -17,11 +17,26 @@ namespace PlutoData.Interface
 
 
         /// <summary>
-        ///  获取仓储
+        /// 获取仓储
         /// </summary>
         /// <typeparam name="TRepository"></typeparam>
+        /// <remarks>
+        /// 获取到的仓储，具有IRepository中的操作，和自定义操作
+        /// </remarks> 
         /// <returns></returns>
         TRepository GetRepository<TRepository>() where TRepository :IRepository;
+
+
+        /// <summary>
+        /// 获取基本的仓储
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <remarks>
+        /// 获取到的仓储，仅具有IRepository中的操作
+        /// </remarks>
+        /// <returns></returns>
+        IRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new();
+
 
         /// <summary>
         /// 返回一个数据库执行策略

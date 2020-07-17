@@ -72,15 +72,27 @@ namespace apisample
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllers();
-            services
-                .AddDbContext<BloggingContext>(
-                    opt =>
-                    {
-                        opt.UseSqlServer(
-                            "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-                        opt.UseLoggerFactory(new LoggerFactory(new[] {new EFLoggerProvider()}));
-                    })
-                .AddUnitOfWork<BloggingContext>().AddRepository();
+
+
+            services.AddUnitOfWorkDbContext<BloggingContext>(opt =>
+            {
+                opt.UseSqlServer(
+                    "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+                opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+            });
+
+            services.AddUnitOfWorkDbContext<Blogging2Context>(opt =>
+            {
+                opt.UseSqlServer(
+                    "Server =.;Database = PlutoDataDemo2;User ID = sa;Password = 123456;Trusted_Connection = False;");
+                opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+            });
+
+            services.AddRepository();
+
+
+
+
                 //.AddCustomRepository<Blog, CustomBlogRepository>();
 
             services.AddSwaggerGen(c =>

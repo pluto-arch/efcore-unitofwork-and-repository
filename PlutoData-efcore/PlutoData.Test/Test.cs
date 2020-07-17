@@ -17,6 +17,8 @@ namespace PlutoData.Test
 
         private InMemoryContext db;
 
+        private InMemory2Context db2;
+
         [SetUp]
         public void SetUp()
         {
@@ -29,13 +31,24 @@ namespace PlutoData.Test
                 db.AddRange(TestItems());
                 db.SaveChanges();
             }
+
+
+            db2 = new InMemory2Context();
+            if (db2.Countries.Any() == false)
+            {
+                db2.AddRange(TestCountries);
+                db2.AddRange(TestCities);
+                db2.AddRange(TestTowns);
+                db2.AddRange(TestItems());
+                db2.SaveChanges();
+            }
+
         }
 
         [Test]
         public async Task TestGetFirstOrDefaultAsyncGetsCorrectItem()
         {
-            var repository = new Repository<City>();
-            repository.DbContext = db;
+            var repository = new Repository<Country>();
             var city = await repository.GetFirstOrDefaultAsync(predicate: t => t.Name == "A");
             Assert.NotNull(city);
             Assert.AreEqual(1, city.Id);
@@ -45,8 +58,7 @@ namespace PlutoData.Test
         [Test]
         public async Task TestGetFirstOrDefaultAsyncReturnsNullValue()
         {
-            var repository = new Repository<City>();
-            repository.DbContext = db;
+            var repository = new Repository<Country>();
             var city = await repository.GetFirstOrDefaultAsync(predicate: t => t.Name == "Easy-E");
             Assert.Null(city);
         }
@@ -55,7 +67,6 @@ namespace PlutoData.Test
         public async Task TestGetFirstOrDefaultAsyncCanInclude()
         {
             var repository = new Repository<City>();
-            repository.DbContext = db;
             var city = await repository.GetFirstOrDefaultAsync(
                 predicate: c => c.Name == "A",
                 include: source => source.Include(t => t.Towns));
@@ -71,7 +82,6 @@ namespace PlutoData.Test
         public void GetPagedList()
         {
             var repository = new Repository<City>();
-            repository.DbContext = db;
             var page = repository.GetPagedList(predicate:null, include: source => source.Include(t => t.Country));
 
             Assert.NotNull(page.TotalCount==6);

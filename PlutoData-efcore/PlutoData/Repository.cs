@@ -23,11 +23,23 @@ namespace PlutoData
         protected DbContext _dbContext;
         protected DbSet<TEntity> _dbSet;
 
+        /// <inheritdoc />
+        public string EntityMapName {
+            get
+            {
+                var entityType = _dbContext.Model.FindEntityType(typeof(TEntity));
+                return entityType.GetTableName();
+            }
+        }
+
+        /// <inheritdoc />
         public DbContext DbContext
         {
             get => _dbContext;
             set
             {
+                if (_dbContext!=null)
+                    throw new InvalidOperationException();
                 _dbContext = value;
                 _dbSet = _dbContext.Set<TEntity>();
             }
@@ -80,6 +92,8 @@ namespace PlutoData
                 return query;
             }
         }
+
+      
 
         /// <inheritdoc />
         public virtual IPagedList<TEntity> GetPagedList(Expression<Func<TEntity, bool>> predicate = null,

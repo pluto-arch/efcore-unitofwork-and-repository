@@ -1,29 +1,11 @@
-﻿using System;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace apisample.Migrations
+namespace apisample.Migrations.Blogging2
 {
-    public partial class init : Migration
+    public partial class init_1 : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.CreateTable(
-                name: "AutoHistory",
-                columns: table => new
-                {
-                    Id = table.Column<int>(nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    RowId = table.Column<string>(maxLength: 50, nullable: false),
-                    TableName = table.Column<string>(maxLength: 128, nullable: false),
-                    Changed = table.Column<string>(nullable: true),
-                    Kind = table.Column<int>(nullable: false),
-                    Created = table.Column<DateTime>(nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_AutoHistory", x => x.Id);
-                });
-
             migrationBuilder.CreateTable(
                 name: "Blogs",
                 columns: table => new
@@ -46,58 +28,55 @@ namespace apisample.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(nullable: true),
                     Content = table.Column<string>(nullable: true),
-                    BlogId = table.Column<int>(nullable: true)
+                    Blog2Id = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Posts", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Posts_Blogs_BlogId",
-                        column: x => x.BlogId,
+                        name: "FK_Posts_Blogs_Blog2Id",
+                        column: x => x.Blog2Id,
                         principalTable: "Blogs",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Comment",
+                name: "Comment2",
                 columns: table => new
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Title = table.Column<string>(nullable: true),
                     Content = table.Column<string>(nullable: true),
-                    PostId = table.Column<int>(nullable: true)
+                    Post2Id = table.Column<int>(nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comment", x => x.Id);
+                    table.PrimaryKey("PK_Comment2", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comment_Posts_PostId",
-                        column: x => x.PostId,
+                        name: "FK_Comment2_Posts_Post2Id",
+                        column: x => x.Post2Id,
                         principalTable: "Posts",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateIndex(
-                name: "IX_Comment_PostId",
-                table: "Comment",
-                column: "PostId");
+                name: "IX_Comment2_Post2Id",
+                table: "Comment2",
+                column: "Post2Id");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_BlogId",
+                name: "IX_Posts_Blog2Id",
                 table: "Posts",
-                column: "BlogId");
+                column: "Blog2Id");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
-                name: "AutoHistory");
-
-            migrationBuilder.DropTable(
-                name: "Comment");
+                name: "Comment2");
 
             migrationBuilder.DropTable(
                 name: "Posts");

@@ -6,10 +6,10 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using apisample;
 
-namespace apisample.Migrations
+namespace apisample.Migrations.Blogging2
 {
-    [DbContext(typeof(BloggingContext))]
-    partial class BloggingContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(Blogging2Context))]
+    partial class Blogging2ContextModelSnapshot : ModelSnapshot
     {
         protected override void BuildModel(ModelBuilder modelBuilder)
         {
@@ -19,7 +19,7 @@ namespace apisample.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("apisample.Blog", b =>
+            modelBuilder.Entity("apisample.Blog2", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,7 +37,7 @@ namespace apisample.Migrations
                     b.ToTable("Blogs");
                 });
 
-            modelBuilder.Entity("apisample.Comment", b =>
+            modelBuilder.Entity("apisample.Comment2", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -47,7 +47,7 @@ namespace apisample.Migrations
                     b.Property<string>("Content")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int?>("PostId")
+                    b.Property<int?>("Post2Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Title")
@@ -55,19 +55,19 @@ namespace apisample.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("PostId");
+                    b.HasIndex("Post2Id");
 
-                    b.ToTable("Comment");
+                    b.ToTable("Comment2");
                 });
 
-            modelBuilder.Entity("apisample.Post", b =>
+            modelBuilder.Entity("apisample.Post2", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-                    b.Property<int?>("BlogId")
+                    b.Property<int?>("Blog2Id")
                         .HasColumnType("int");
 
                     b.Property<string>("Content")
@@ -78,23 +78,23 @@ namespace apisample.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("BlogId");
+                    b.HasIndex("Blog2Id");
 
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("apisample.Comment", b =>
+            modelBuilder.Entity("apisample.Comment2", b =>
                 {
-                    b.HasOne("apisample.Post", null)
+                    b.HasOne("apisample.Post2", null)
                         .WithMany("Comments")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("Post2Id");
                 });
 
-            modelBuilder.Entity("apisample.Post", b =>
+            modelBuilder.Entity("apisample.Post2", b =>
                 {
-                    b.HasOne("apisample.Blog", null)
+                    b.HasOne("apisample.Blog2", null)
                         .WithMany("Posts")
-                        .HasForeignKey("BlogId");
+                        .HasForeignKey("Blog2Id");
                 });
 #pragma warning restore 612, 618
         }
