@@ -1,48 +1,59 @@
 # pluto-efcore-general-repository
 efcore-general-repository
 
-### how to use
+### 注入UOW
 
 ```csharp
-services.AddDbContext<BloggingContext>(opt =>
-                    {
-                        opt.UseSqlServer(
-                            "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-                        opt.UseLoggerFactory(new LoggerFactory(new[] {new EFLoggerProvider()}));
-                    })
-                .AddUnitOfWork<BloggingContext>().AddRepository();
+services.AddUnitOfWorkDbContext<BloggingContext>(opt =>
+{
+    opt.UseSqlServer(
+        "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+    opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+});
+// 支持注入多个
 ```
-`AddRepository()  可选。默认使用程序集扫描。不适用这个的化，请自行注入仓储`
 
-仓储的使用：
-接口继承自：: `IRepository<TEntity>` 实现类继承自：`Repository<TEntity>` 通用仓储已有常用CRUD操作，如另有需求请自行添加
-
+### 仓储
+1. 基本仓储
 ```csharp
-public static IServiceCollection AddRepository(this IServiceCollection services)
-        {
-            var assembly = Assembly.GetEntryAssembly();
-            var implTypes = assembly.GetTypes().Where(c => !c.IsInterface && c.Name.EndsWith("Repository")).ToList();
-            foreach (var impltype in implTypes)
-            {
-                var interfaces = impltype.GetInterfaces().Where(c => c.Name.StartsWith("I") && c.Name.EndsWith("Repository"));
-                if (interfaces.Count() <= 0)
-                    continue;
-                foreach (var inter in interfaces)
-                    services.AddScoped(inter, impltype);
-            }
-            return services;
-        }
+// 基本仓储unitofwork中已有，直接使用TEntity
+// IRepository<TEntity>
+// 使用 uow的GetBaseRepository即可
+unitOfWork.GetBaseRepository<Blog>();
 ```
 
-自定义仓储：
+2. 自定义仓储
 ```csharp
-public class CategoryRepository: Repository<Category>,ICategoryRepository
-    {
-        public CategoryRepository() : base()
-        {
-        }
-    }
+services.AddRepository(); 
+// 默认使用程序集扫描注入仓储，可选，不使用这个的话，请自定使用services.AddScoped<I{customer}Repository,{customer}Repository>()
+// 自定义repository，需分别继承自IRepository<TEntity>。Repository<TEntity>
+// 使用unitOfWork.GetRepository<ICustomBlogRepository>();
+public interface ICustomBlogRepository : IRepository<Blog>
+{
+  // ...
+}
+public class CustomBlogRepository : Repository<Blog>, ICustomBlogRepository
+{
+  // ...
+}
 ```
+
+### 获取仓储
+1. 获取基本仓储(仅支持IRepository中的操作)
+```csharp
+// unitOfWork.GetBaseRepository<TEntity>()
+public ctor(IUnitOfWork<BloggingContext> unitOfWork){
+  var baseRep = unitOfWork.GetBaseRepository<Blog>();
+}
+```
+2. 获取自定义仓储(支持IRepository中的操作和自定义操作)
+```csharp
+// unitOfWork.GetRepository<ICustomBlogRepository>()
+public ctor(IUnitOfWork<BloggingContext> unitOfWork){
+  var baseRep = unitOfWork.GetRepository<ICustomBlogRepository>();
+}
+```
+
 获取自定义仓储
 ```csharp
         private readonly IUnitOfWork<BloggingContext> _unitOfWork;
