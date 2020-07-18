@@ -23,22 +23,16 @@ namespace apisample.Controllers
     public class ValuesController : ControllerBase
     {
         private readonly IUnitOfWork<BloggingContext> _unitOfWork;
-        private readonly IUnitOfWork<Blogging2Context> _unitOfWork2;
         private ILogger<ValuesController> _logger;
         private readonly ICustomBlogRepository _customBlogRepository;
 
         public ValuesController(
             IUnitOfWork<BloggingContext> unitOfWork,
-            ILogger<ValuesController> logger,
-            IUnitOfWork<Blogging2Context> unitOfWork2)
+            ILogger<ValuesController> logger)
         {
             _unitOfWork = unitOfWork;
             _logger = logger;
-            _unitOfWork2 = unitOfWork2;
             _customBlogRepository = unitOfWork.GetRepository<ICustomBlogRepository>();
-
-
-            var a_customBlogRepository = unitOfWork.GetBaseRepository<Blog>();
         }
 
         // GET api/values
@@ -69,7 +63,6 @@ namespace apisample.Controllers
         [HttpGet("MultipleDbContext")]
         public IActionResult MultipleDbContext()
         {
-
             var rep1 = _unitOfWork.GetRepository<ICustomBlogRepository>();
             rep1.Insert(new Blog
             {
@@ -78,16 +71,47 @@ namespace apisample.Controllers
             });
 
 
-            var rep2 = _unitOfWork2.GetRepository<ICustomBlog2Repository>();
-            rep2.Insert(new Blog2
-            {
-                Url = "_unitOfWork2",
-                Title = "_unitOfWork2",
-            });
+            var rep2 = _unitOfWork.GetRepository<ICustomBlogRepository>();
 
-            _unitOfWork.SaveChanges();
-            _unitOfWork2.SaveChanges();
-            return Ok("12312");
+
+            _logger.LogInformation("rep1_dbx_id: {@id}", rep1.DbContext.ContextId.InstanceId.ToString());
+
+            _logger.LogError("rep2_dbx_id: {@id}", rep2.DbContext.ContextId.InstanceId);
+
+            _logger.LogCritical("repCus_dbx_id: {@id}", _customBlogRepository.DbContext.ContextId.InstanceId);
+
+            _logger.LogError("uow_dbx_id: {@id}", _unitOfWork.DbContext.ContextId.InstanceId);
+
+            
+            var a = rep1.DbContext.ContextId.InstanceId.ToString();
+            var b = rep2.DbContext.ContextId.InstanceId.ToString();
+            var c = _customBlogRepository.DbContext.ContextId.InstanceId.ToString();
+            var d = _unitOfWork.DbContext.ContextId.InstanceId.ToString();
+
+            var arr = new string[] {a, b, c, d};
+
+            if (arr.Distinct().Count()>1)
+            {
+                return NotFound("出错了");
+            }
+
+
+
+            var ad = _unitOfWork.GetBaseRepository<Blog2>();
+
+            var ad2 = _unitOfWork.GetBaseRepository<Blog2>();
+
+            var cw = ad.DbContext.ContextId.InstanceId.ToString();
+            var dww = ad2.DbContext.ContextId.InstanceId.ToString();
+            var arr2 = new string[] {cw, dww, d};
+
+            if (arr2.Distinct().Count()>1)
+            {
+                return NotFound("出错了111111111111111");
+            }
+
+
+            return Ok("11");
         }
 
 
@@ -122,7 +146,7 @@ namespace apisample.Controllers
         public async Task<IActionResult> GetRepository()
         {
 
-            var first= _unitOfWork.GetRepository<ICustomBlogRepository>(); // 单独获取
+            var first = _unitOfWork.GetRepository<ICustomBlogRepository>(); // 单独获取
 
 
             var second = _unitOfWork.GetRepository<ICustomBlogRepository>(); // 单独获取

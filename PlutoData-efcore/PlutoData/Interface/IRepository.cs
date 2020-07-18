@@ -21,6 +21,7 @@ namespace PlutoData.Interface
         /// 只能由unitofwork初始化
         /// </remarks>
         DbContext DbContext { get; set; }
+
     }
 
     /// <summary>
@@ -42,7 +43,7 @@ namespace PlutoData.Interface
         /// <param name="include">导航属性表达式</param>
         /// <param name="pageIndex">默认1</param>
         /// <param name="pageSize">默认20</param>
-        /// <param name="disableTracking">是否启用追踪 Default to <c>true</c>.</param>
+        /// <param name="disableTracking">是否关闭追踪 Default to <c>true</c>.</param>
         /// <param name="ignoreQueryFilters">忽略查询过滤器</param>
         /// <returns>返回值: <see cref="IPagedList{TEntity}"/> </returns>
         IPagedList<TEntity> GetPagedList(Expression<Func<TEntity, bool>> predicate = null,
@@ -62,7 +63,7 @@ namespace PlutoData.Interface
         /// <param name="include">导航属性表达式</param>
         /// <param name="pageIndex">默认1</param>
         /// <param name="pageSize">默认20</param>
-        /// <param name="disableTracking">是否启用追踪. Default to <c>true</c>.</param>
+        /// <param name="disableTracking">是否关闭追踪. Default to <c>true</c>.</param>
         /// <param name="cancellationToken">
         ///     A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
         /// </param>

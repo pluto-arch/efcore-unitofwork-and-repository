@@ -23,6 +23,7 @@ namespace PlutoData
         protected DbContext _dbContext;
         protected DbSet<TEntity> _dbSet;
 
+
         /// <inheritdoc />
         public string EntityMapName {
             get
@@ -31,6 +32,8 @@ namespace PlutoData
                 return entityType.GetTableName();
             }
         }
+        
+        public string ID { get; set; }
 
         /// <inheritdoc />
         public DbContext DbContext
@@ -44,6 +47,7 @@ namespace PlutoData
                 _dbSet = _dbContext.Set<TEntity>();
             }
         }
+
 
         /// <inheritdoc />
         public IQueryable<TEntity> GetAll()
