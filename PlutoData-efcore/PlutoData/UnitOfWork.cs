@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Storage;
-
+using PlutoData.Extensions;
 using PlutoData.Interface;
 
 
@@ -66,7 +66,7 @@ namespace PlutoData
             {
                 throw new NullReferenceException($"{typeof(TRepository)} not register");
             }
-            repository.DbContext = _context;
+            repository.SetDbContext(_context);
             repositories[type] = repository;
             return repository;
         }
@@ -89,7 +89,7 @@ namespace PlutoData
             {
                 throw new NullReferenceException($"{typeof(IRepository<TEntity>)} not register");
             }
-            repository.DbContext = _context;
+            repository.SetDbContext(_context);
             repositories[type] = repository;
             return repository;
         }

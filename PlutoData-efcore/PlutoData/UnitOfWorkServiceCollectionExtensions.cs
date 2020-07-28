@@ -19,13 +19,17 @@ namespace PlutoData
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
-        /// <param name="optionBuilder">dbcontext 配置</param>
+        /// <param name="optionBuilder"></param>
+        /// <param name="liftLifetime"></param>
         /// <returns></returns>
-        public static IServiceCollection AddUnitOfWorkDbContext<TContext>(this IServiceCollection services, Action<DbContextOptionsBuilder> optionBuilder)
+        public static IServiceCollection AddUnitOfWorkDbContext<TContext>(
+            this IServiceCollection services, 
+            Action<DbContextOptionsBuilder> optionBuilder,
+            ServiceLifetime liftLifetime=ServiceLifetime.Scoped)
             where TContext : DbContext
         {
             services
-                .AddDbContext<TContext>(optionBuilder)
+                .AddDbContext<TContext>(optionBuilder,liftLifetime)
                 .AddUnitOfWork<TContext>();
             return services;
         }
