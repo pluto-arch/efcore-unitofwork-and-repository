@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using PlutoData;
+using PlutoData.Interface;
 
 namespace apisample
 {
@@ -87,7 +88,7 @@ namespace apisample
                     "Server =.;Database = PlutoDataDemo2;User ID = sa;Password = 123456;Trusted_Connection = False;");
                 opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
             });
-
+            
             services.AddRepository();
 
 
