@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -14,6 +15,7 @@ using Microsoft.EntityFrameworkCore.Storage.Internal;
 using Microsoft.Extensions.Logging;
 
 using PlutoData.Collections;
+using PlutoData.Extensions;
 using PlutoData.Interface;
 
 namespace apisample.Controllers
@@ -35,82 +37,27 @@ namespace apisample.Controllers
             _customBlogRepository = unitOfWork.GetRepository<ICustomBlogRepository>();
         }
 
-        // GET api/values
-        [HttpGet("BeginTransactionAsync")]
-        public async Task<IList<Blog>> BeginTransactionAsync()
+        [HttpGet("like")]
+        public async Task<IList<Blog>> GetList()
         {
-            using (var tran = await _unitOfWork.BeginTransactionAsync())
-            {
-                try
-                {
-                    var commandText = @$"INSERT INTO {_customBlogRepository.EntityMapName}([Url], [Title]) VALUES (N'Normal_55222', N'1231222');";
-                    _unitOfWork.ExecuteSqlCommand(commandText);
-                    await tran.CommitAsync();
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError(e, e.Message);
-                    await tran.RollbackAsync();
-                }
-            }
-
-            return await _customBlogRepository.GetAllAsync(include: source => source.Include(blog => blog.Posts).ThenInclude(post => post.Comments));
+            Expression<Func<Blog, bool>> p = x => x.Id > 0;
+            p = p.And(x => EF.Functions.Like(x.Title, "9%"));
+            var aaa = await _customBlogRepository.GetAllAsync(p);
+            return aaa;
         }
 
 
 
-        // GET api/values/Page/5/10
-        [HttpGet("MultipleDbContext")]
-        public IActionResult MultipleDbContext()
+        [HttpPost("Create")]
+        public async Task<IActionResult> Create()
         {
             var rep1 = _unitOfWork.GetRepository<ICustomBlogRepository>();
             rep1.Insert(new Blog
             {
                 Url = "_unitOfWork2",
-                Title = "_unitOfWork2",
+                Title = Guid.NewGuid().ToString("N"),
             });
-
-
-            var rep2 = _unitOfWork.GetRepository<ICustomBlogRepository>();
-
-
-            _logger.LogInformation("rep1_dbx_id: {@id}", rep1.DbContext.ContextId.InstanceId.ToString());
-
-            _logger.LogError("rep2_dbx_id: {@id}", rep2.DbContext.ContextId.InstanceId);
-
-            _logger.LogCritical("repCus_dbx_id: {@id}", _customBlogRepository.DbContext.ContextId.InstanceId);
-
-            _logger.LogError("uow_dbx_id: {@id}", _unitOfWork.DbContext.ContextId.InstanceId);
-
-            
-            var a = rep1.DbContext.ContextId.InstanceId.ToString();
-            var b = rep2.DbContext.ContextId.InstanceId.ToString();
-            var c = _customBlogRepository.DbContext.ContextId.InstanceId.ToString();
-            var d = _unitOfWork.DbContext.ContextId.InstanceId.ToString();
-
-            var arr = new string[] {a, b, c, d};
-
-            if (arr.Distinct().Count()>1)
-            {
-                return NotFound("出错了");
-            }
-
-
-
-            var ad = _unitOfWork.GetBaseRepository<Blog2>();
-
-            var ad2 = _unitOfWork.GetBaseRepository<Blog2>();
-
-            var cw = ad.DbContext.ContextId.InstanceId.ToString();
-            var dww = ad2.DbContext.ContextId.InstanceId.ToString();
-            var arr2 = new string[] {cw, dww, d};
-
-            if (arr2.Distinct().Count()>1)
-            {
-                return NotFound("出错了111111111111111");
-            }
-
-
+            await _unitOfWork.SaveChangesAsync();
             return Ok("11");
         }
 

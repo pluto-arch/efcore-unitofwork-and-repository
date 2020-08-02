@@ -12,6 +12,9 @@ using PlutoData.Collections;
 namespace PlutoData.Interface
 {
 
+    /// <summary>
+    /// 
+    /// </summary>
     public interface IRepository
     {
         /// <summary>

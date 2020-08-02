@@ -2,11 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.2.0</Version>
+    <Version>1.3.5</Version>
     <Product>PlutoData</Product>
     <Description>efcore unitof work and repository</Description>
     <PackageId>PlutoData</PackageId>
-    <GeneratePackageOnBuild>False</GeneratePackageOnBuild>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageReleaseNotes>remove repository constructor dbcontext parameter</PackageReleaseNotes>
     <PackageProjectUrl>https://github.com/pluto-arch/efcore-unitofwork-and-repository</PackageProjectUrl>
     <PackageRequireLicenseAcceptance>False</PackageRequireLicenseAcceptance>
@@ -15,6 +15,15 @@
     <AssemblyVersion>0.0.2.1</AssemblyVersion>
     <Authors>zhangyulong</Authors>
     <RepositoryUrl>https://github.com/pluto-arch/efcore-unitofwork-and-repository</RepositoryUrl>
+    <PackageVersion>1.3.5</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DocumentationFile>bin\Debug\PlutoData.xml</DocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DocumentationFile>bin\Release\PlutoData.xml</DocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>

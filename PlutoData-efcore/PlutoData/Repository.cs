@@ -33,8 +33,6 @@ namespace PlutoData
             }
         }
         
-        public string ID { get; set; }
-
         /// <inheritdoc />
         public DbContext DbContext
         {

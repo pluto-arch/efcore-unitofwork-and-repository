@@ -38,6 +38,9 @@ namespace PlutoData.Collections
     }
 
 
+    /// <summary>
+    /// IQueryable to IPageList Extensions
+    /// </summary>
     public static class IQueryablePageListExtensions
     {
         /// <summary>

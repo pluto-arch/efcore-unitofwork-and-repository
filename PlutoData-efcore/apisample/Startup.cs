@@ -31,12 +31,12 @@ namespace apisample
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            //ef coreÖ´ÐÐÊý¾Ý¿â²éÑ¯Ê±µÄcategoryNameÎªMicrosoft.EntityFrameworkCore.Database.Command,ÈÕÖ¾¼¶±ðÎªInformation
+            //ef coreÖ´ï¿½ï¿½ï¿½ï¿½ï¿½Ý¿ï¿½ï¿½Ñ¯Ê±ï¿½ï¿½categoryNameÎªMicrosoft.EntityFrameworkCore.Database.Command,ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ÎªInformation
             if (categoryName == "Microsoft.EntityFrameworkCore.Database.Command"
                 && logLevel == LogLevel.Information)
             {
                 var logContent = formatter(state, exception);
-                //TODO: ÄÃµ½ÈÕÖ¾ÄÚÈÝÏëÔõÃ´Íæ¾ÍÔõÃ´Íæ°É
+                //TODO: ï¿½Ãµï¿½ï¿½ï¿½Ö¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½ï¿½ï¿½Ã´ï¿½ï¿½ï¿½
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(logContent);
@@ -78,13 +78,6 @@ namespace apisample
             {
                 opt.UseSqlServer(
                     "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-                opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
-            });
-
-            services.AddUnitOfWorkDbContext<Blogging2Context>(opt =>
-            {
-                opt.UseSqlServer(
-                    "Server =.;Database = PlutoDataDemo2;User ID = sa;Password = 123456;Trusted_Connection = False;");
                 opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
             });
 

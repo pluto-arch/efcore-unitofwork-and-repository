@@ -2,6 +2,10 @@
 
 namespace PlutoData.Collections
 {
+    /// <summary>
+    /// PagedList interface
+    /// </summary>
+    /// <typeparam name="T"></typeparam>
     public interface IPagedList<T>
     {
 

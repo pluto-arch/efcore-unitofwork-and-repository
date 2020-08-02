@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore.Storage;
 
 namespace PlutoData.Interface
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TContext"></typeparam>
     public interface IUnitOfWork<TContext> : IDisposable where TContext : DbContext
     {
         /// <summary>
@@ -102,9 +106,20 @@ namespace PlutoData.Interface
         /// <returns></returns>
         Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks);
 
+        /// <summary>
+        /// Begin Transaction 
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
 
         Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
+        /// <summary>
+        /// Commit Transaction
+        /// </summary>
+        /// <param name="transaction"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
         Task CommitTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default);
     }
 }

@@ -18,6 +18,10 @@ using PlutoData.Interface;
 
 namespace PlutoData
 {
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TContext"></typeparam>
     public class UnitOfWork<TContext> : IUnitOfWork<TContext> where TContext : DbContext
     {
         private Dictionary<Type, object> repositories;
@@ -25,6 +29,10 @@ namespace PlutoData
         private bool disposed = false;
 
         private IDbContextTransaction _currentTransaction;
+        /// <summary>
+        /// get Current Transaction
+        /// </summary>
+        /// <returns></returns>
         public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
 
 

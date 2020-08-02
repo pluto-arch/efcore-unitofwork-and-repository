@@ -12,6 +12,9 @@ using PlutoData.Interface;
 
 namespace PlutoData
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public static class UnitOfWorkServiceCollectionExtensions
     {
         /// <summary>
@@ -36,7 +39,10 @@ namespace PlutoData
 
         /// <summary>
         /// 添加单个unitofwork
-        /// 需要单独添加dbcontext<see cref="services.AddDbContext"/>
+        /// 需要单独添加dbcontext
+        /// <see>
+        ///     <cref>services.AddDbContext</cref>
+        /// </see>
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
