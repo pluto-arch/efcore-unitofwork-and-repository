@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Console;
 using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using PlutoData;
+using PlutoData.Interface;
 
 namespace apisample
 {
@@ -31,12 +32,12 @@ namespace apisample
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            //ef coreִ�����ݿ��ѯʱ��categoryNameΪMicrosoft.EntityFrameworkCore.Database.Command,��־����ΪInformation
+            //ef core?????????????categoryName?Microsoft.EntityFrameworkCore.Database.Command,????????Information
             if (categoryName == "Microsoft.EntityFrameworkCore.Database.Command"
                 && logLevel == LogLevel.Information)
             {
                 var logContent = formatter(state, exception);
-                //TODO: �õ���־��������ô�����ô���
+                //TODO: ????????????????????????
                 Console.WriteLine();
                 Console.ForegroundColor = ConsoleColor.Green;
                 Console.WriteLine(logContent);
