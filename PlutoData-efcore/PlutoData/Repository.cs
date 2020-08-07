@@ -8,9 +8,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Query;
 using PlutoData.Collections;
 using PlutoData.Interface;
@@ -48,9 +45,9 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public IQueryable<TEntity> GetAll()
+        public IQueryable<TEntity> GetAll(bool disableTracking=false)
         {
-            return _dbSet;
+            return disableTracking ? _dbSet.AsNoTracking() : _dbSet;
         }
 
         /// <inheritdoc />
@@ -60,7 +57,7 @@ namespace PlutoData
                 IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>,
                 IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = true,
+            bool disableTracking = false,
             bool ignoreQueryFilters = false)
         {
             IQueryable<TEntity> query = _dbSet;
@@ -95,15 +92,20 @@ namespace PlutoData
             }
         }
 
-      
 
+        /// <summary>
+        /// 单个scope内设置不追踪
+        /// </summary>
+        public void SetNoTracking()=>this._dbSet.AsNoTracking();
+        
+        
         /// <inheritdoc />
         public virtual IPagedList<TEntity> GetPagedList(Expression<Func<TEntity, bool>> predicate = null,
                                                 Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
                                                 Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
                                                 int pageIndex = 1,
                                                 int pageSize = 20,
-                                                bool disableTracking = true,
+                                                bool disableTracking = false,
                                                 bool ignoreQueryFilters = false)
         {
             IQueryable<TEntity> query = _dbSet;
@@ -145,7 +147,7 @@ namespace PlutoData
                                                            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
                                                            int pageIndex = 1,
                                                            int pageSize = 20,
-                                                           bool disableTracking = true,
+                                                           bool disableTracking = false,
                                                            CancellationToken cancellationToken = default(CancellationToken),
                                                            bool ignoreQueryFilters = false)
         {
@@ -188,7 +190,7 @@ namespace PlutoData
                                                          Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
                                                          int pageIndex = 1,
                                                          int pageSize = 20,
-                                                         bool disableTracking = true,
+                                                         bool disableTracking = false,
                                                          bool ignoreQueryFilters = false)
             where TResult : class
         {
@@ -231,7 +233,7 @@ namespace PlutoData
                                                                     Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
                                                                     int pageIndex = 1,
                                                                     int pageSize = 20,
-                                                                    bool disableTracking = true,
+                                                                    bool disableTracking = false,
                                                                     CancellationToken cancellationToken = default(CancellationToken),
                                                                     bool ignoreQueryFilters = false)
             where TResult : class
@@ -272,7 +274,7 @@ namespace PlutoData
         public virtual TEntity GetFirstOrDefault(Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = true,
+            bool disableTracking = false,
             bool ignoreQueryFilters = false)
         {
             IQueryable<TEntity> query = _dbSet;
@@ -312,7 +314,7 @@ namespace PlutoData
         public virtual async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = true,
+            bool disableTracking = false,
             bool ignoreQueryFilters = false,
             CancellationToken cancellationToken = default)
         {
@@ -353,7 +355,7 @@ namespace PlutoData
             Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = true,
+            bool disableTracking = false,
             bool ignoreQueryFilters = false)
         {
             IQueryable<TEntity> query = _dbSet;
@@ -393,7 +395,7 @@ namespace PlutoData
             Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = true, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
+            bool disableTracking = false, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
         {
             IQueryable<TEntity> query = _dbSet;
 
@@ -570,7 +572,7 @@ namespace PlutoData
         public async Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = true, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
+            bool disableTracking = false, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
         {
             IQueryable<TEntity> query = _dbSet;
 

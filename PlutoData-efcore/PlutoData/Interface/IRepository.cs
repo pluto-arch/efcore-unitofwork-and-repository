@@ -38,6 +38,13 @@ namespace PlutoData.Interface
         /// </summary>
         string EntityMapName { get; }
 
+
+        /// <summary>
+        /// 单个scope内设置不追踪
+        /// </summary>
+        void SetNoTracking();
+        
+
         /// <summary>
         /// 获取分页数据 <see cref="IPagedList{T}"/> 。默认无追踪
         /// </summary>
@@ -233,7 +240,7 @@ namespace PlutoData.Interface
         /// 获取所有实体
         /// </summary>
         /// <returns>The <see cref="IQueryable{TEntity}"/>.</returns>
-        IQueryable<TEntity> GetAll();
+        IQueryable<TEntity> GetAll(bool disableTracking=false);
 
         /// <summary>
         /// 获取所有实体
