@@ -38,12 +38,12 @@ namespace apisample.Controllers
         }
 
         [HttpGet("like")]
-        public async Task<IList<Blog>> GetList()
+        public async Task<IActionResult> GetList()
         {
             Expression<Func<Blog, bool>> p = x => x.Id > 0;
-            p = p.And(x => EF.Functions.Like(x.Title, "9%"));
-            var aaa = await _customBlogRepository.GetAllAsync(p);
-            return aaa;
+            //p = p.And(x => EF.Functions.Like(x.Title, "9%"));
+            var aaa = await _customBlogRepository.GetPagedListAsync(p,pageIndex:1,pageSize:20);
+            return Ok(aaa);
         }
 
 
@@ -104,7 +104,7 @@ namespace apisample.Controllers
                 Url = "Normal_" + new Random().Next(100, 999),
                 Title = "12312"
             };
-            _customBlogRepository.Insert(blog2); // 从构造函数中获取
+            _customBlogRepository.Insert(blog2); 
 
 
             var blog222 = new Blog

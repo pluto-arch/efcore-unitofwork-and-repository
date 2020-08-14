@@ -21,7 +21,7 @@ namespace PlutoData.Collections
 		public int TotalCount { get; set; }
 
 		/// <inheritdoc />
-		public int TotalPages { get; set; }
+		public int TotalPages => (int) Math.Ceiling(TotalCount / (double) PageSize);
 
 		/// <inheritdoc />
 		public bool HasPreviousPage => PageIndex - 1 > 0;
@@ -33,7 +33,7 @@ namespace PlutoData.Collections
 		public IList<T> Items { get; set; }
 
 
-		internal PagedList(IEnumerable<T> source, int pageIndex, int pageSize)
+		public PagedList(IEnumerable<T> source, int pageIndex, int pageSize)
 		{
 			if (source == null)
 			{
@@ -50,7 +50,6 @@ namespace PlutoData.Collections
 				PageIndex = pageIndex;
 				PageSize = pageSize;
 				TotalCount = querable.Count();
-				TotalPages = (int) Math.Ceiling(TotalCount / (double) PageSize);
 				Items = querable.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
 			}
 			else
@@ -58,7 +57,6 @@ namespace PlutoData.Collections
 				PageIndex = pageIndex;
 				PageSize = pageSize;
 				TotalCount = source.Count();
-				TotalPages = (int) Math.Ceiling(TotalCount / (double) PageSize);
 				Items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
 			}
 		}
@@ -75,7 +73,7 @@ namespace PlutoData.Collections
 
 		public int TotalCount { get; }
 
-		public int TotalPages { get; }
+		public int TotalPages => (int) Math.Ceiling(TotalCount / (double) PageSize);
 
 		public bool HasPreviousPage => PageIndex - 1 > 0;
 
@@ -105,7 +103,6 @@ namespace PlutoData.Collections
 				PageIndex = pageIndex;
 				PageSize = pageSize;
 				TotalCount = querable.Count();
-				TotalPages = (int) Math.Ceiling(TotalCount / (double) PageSize);
 				var items = querable.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToArray();
 				Items = new List<TResult>(converter(items));
 			}
@@ -114,7 +111,6 @@ namespace PlutoData.Collections
 				PageIndex = pageIndex;
 				PageSize = pageSize;
 				TotalCount = source.Count();
-				TotalPages = (int) Math.Ceiling(TotalCount / (double) PageSize);
 				var items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToArray();
 				Items = new List<TResult>(converter(items));
 			}
@@ -128,7 +124,6 @@ namespace PlutoData.Collections
 			PageIndex = source.PageIndex;
 			PageSize = source.PageSize;
 			TotalCount = source.TotalCount;
-			TotalPages = source.TotalPages;
 			Items = new List<TResult>(converter(source.Items));
 		}
 	}
