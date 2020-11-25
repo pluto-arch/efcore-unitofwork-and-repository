@@ -1,5 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using PlutoData.Interface;
+using PlutoData.Interface.Base;
 
 namespace PlutoData.Extensions
 {
@@ -13,9 +13,22 @@ namespace PlutoData.Extensions
         /// </summary>
         /// <param name="this"></param>
         /// <param name="context"></param>
-        public static void SetDbContext(this IRepository @this,DbContext context)
+        public static void SetDbContext(this IEfRepository @this,DbContext context)
         {
             @this.DbContext = context;
         } 
+
+
+        /// <summary>
+        /// setting dbcontext
+        /// </summary>
+        /// <param name="this"></param>
+        /// <param name="context"></param>
+        public static void SetDbContext(this IDapperRepository @this,DapperDbContext context)
+        {
+	        @this.DbContext = context;
+        } 
+
+
     }
 }

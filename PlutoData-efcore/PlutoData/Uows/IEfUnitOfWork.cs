@@ -1,18 +1,20 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using PlutoData.Interface.Base;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Storage;
+using PlutoData.Interface;
 
-namespace PlutoData.Interface
+namespace PlutoData.Uows
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TContext"></typeparam>
-    public interface IUnitOfWork<TContext> : IDisposable where TContext : DbContext
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TContext"></typeparam>
+	public interface IEfUnitOfWork<TContext> : IDisposable where TContext : DbContext
     {
         /// <summary>
         /// 是否有活动的事务对象
@@ -28,7 +30,7 @@ namespace PlutoData.Interface
         /// 获取到的仓储，具有IRepository中的操作，和自定义操作
         /// </remarks> 
         /// <returns></returns>
-        TRepository GetRepository<TRepository>() where TRepository :IRepository;
+        TRepository GetRepository<TRepository>() where TRepository :IEfRepository;
 
 
         /// <summary>
@@ -39,7 +41,7 @@ namespace PlutoData.Interface
         /// 获取到的仓储，仅具有IRepository中的操作
         /// </remarks>
         /// <returns></returns>
-        IRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new();
+        IEfRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new();
 
 
         /// <summary>
@@ -104,7 +106,7 @@ namespace PlutoData.Interface
         /// <param name="cancellationToken"></param>
         /// <param name="unitOfWorks"></param>
         /// <returns></returns>
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IEfUnitOfWork<TContext>[] unitOfWorks);
 
         /// <summary>
         /// Begin Transaction 

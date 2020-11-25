@@ -8,6 +8,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
 using PlutoData.Interface;
+using PlutoData.Uows;
 
 
 namespace PlutoData
@@ -23,17 +24,15 @@ namespace PlutoData
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
         /// <param name="optionBuilder"></param>
-        /// <param name="liftLifetime"></param>
         /// <returns></returns>
         public static IServiceCollection AddUnitOfWorkDbContext<TContext>(
             this IServiceCollection services, 
-            Action<DbContextOptionsBuilder> optionBuilder,
-            ServiceLifetime liftLifetime=ServiceLifetime.Scoped)
+            Action<DbContextOptionsBuilder> optionBuilder)
             where TContext : DbContext
         {
-            services
-                .AddDbContext<TContext>(optionBuilder,liftLifetime)
-                .AddUnitOfWork<TContext>();
+	        services
+                .AddDbContext<TContext>(optionBuilder,ServiceLifetime.Scoped)
+                .AddEfUnitOfWork<TContext>();
             return services;
         }
 
@@ -47,11 +46,11 @@ namespace PlutoData
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection services)
+        public static IServiceCollection AddEfUnitOfWork<TContext>(this IServiceCollection services)
             where TContext : DbContext
         {
-            services.AddScoped<IUnitOfWork<TContext>, UnitOfWork<TContext>>();
-            services.TryAddScoped(typeof(IRepository<>), typeof(Repository<>));
+            services.AddScoped<IEfUnitOfWork<TContext>, EfUnitOfWork<TContext>>();
+            services.TryAddScoped(typeof(IEfRepository<>), typeof(EfRepository<>));
             return services;
         }
 
@@ -67,11 +66,30 @@ namespace PlutoData
             foreach (var impltype in implTypes)
             {
                 var interfaces = impltype.GetInterfaces().Where(c => c.Name.StartsWith("I") && c.Name.EndsWith("Repository"));
-                if (interfaces.Count() <= 0)
+                if (!interfaces.Any())
                     continue;
                 foreach (var inter in interfaces)
                     services.AddScoped(inter, impltype);
             }
+        }
+
+
+
+        /// <summary>
+        /// 添加dapper 单元工作
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="connStr"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddDapperUnitOfWork(this IServiceCollection service,string connStr)
+        {
+	        service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
+	        service.AddScoped<DapperDbContext>(sp=>
+	                                           {
+		                                           return new DapperDbContext(sp,connStr);
+	                                           });
+	        service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
+	        return service;
         }
 
     }

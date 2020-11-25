@@ -84,7 +84,10 @@ namespace apisample
 
             services.AddRepository();
 
-
+            services.AddScoped<DapperDbContext>(sp=>
+                                                {
+                                                    return new DapperDbContext(sp,"Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+                                                });
 
 
                 //.AddCustomRepository<Blog, CustomBlogRepository>();

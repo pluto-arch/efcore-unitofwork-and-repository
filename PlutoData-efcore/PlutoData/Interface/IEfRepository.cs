@@ -1,37 +1,23 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Query;
+using PlutoData.Collections;
+using PlutoData.Interface.Base;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Query;
-using PlutoData.Collections;
 
 namespace PlutoData.Interface
 {
 
-    /// <summary>
-    /// 
-    /// </summary>
-    public interface IRepository
-    {
-        /// <summary>
-        /// dbcontext
-        /// </summary>
-        /// <remarks>
-        /// 只能由unitofwork初始化
-        /// </remarks>
-        DbContext DbContext { get; set; }
-
-    }
-
-    /// <summary>
-    /// 泛型仓储接口
-    /// </summary>
-    /// <typeparam name="TEntity"></typeparam>
-    public interface IRepository<TEntity>: IRepository where TEntity : class
+	/// <summary>
+	/// 泛型仓储接口
+	/// </summary>
+	/// <typeparam name="TEntity"></typeparam>
+	public interface IEfRepository<TEntity>: IEfRepository where TEntity : class
     {
         /// <summary>
         /// 实体映射的表名

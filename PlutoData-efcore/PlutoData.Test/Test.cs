@@ -1,155 +1,85 @@
-﻿using System;
-using System.Linq;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using apisample;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
-using Newtonsoft.Json;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using NUnit.Framework;
-using PlutoData.Collections;
+using PlutoData.Test.Repositorys.Dapper;
+using PlutoData.Uows;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace PlutoData.Test
 {
-    [TestFixture]
+	[TestFixture]
     public class Test
     {
 
-        private InMemoryContext db;
-
-        private InMemory2Context db2;
-
+        private IServiceProvider _provider;
+        private IEfUnitOfWork<BloggingContext> _uow;
+        private IDapperUnitOfWork _dapperUnitOfWork;
         [SetUp]
         public void SetUp()
         {
-            db = new InMemoryContext();
-            if (db.Countries.Any() == false)
-            {
-                db.AddRange(TestCountries);
-                db.AddRange(TestCities);
-                db.AddRange(TestTowns);
-                db.AddRange(TestItems());
-                db.SaveChanges();
-            }
-
-
-            db2 = new InMemory2Context();
-            if (db2.Countries.Any() == false)
-            {
-                db2.AddRange(TestCountries);
-                db2.AddRange(TestCities);
-                db2.AddRange(TestTowns);
-                db2.AddRange(TestItems());
-                db2.SaveChanges();
-            }
-
+            var service=new ServiceCollection();
+            service.AddControllers();
+            service.AddUnitOfWorkDbContext<BloggingContext>(opt =>
+                                                            {
+	                                                            opt.UseSqlServer(
+	                                                             "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+	                                                            opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+                                                            });
+            service.AddRepository();
+            service.AddDapperUnitOfWork("Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+            service.AddScoped<IBlogDapperRepository,BlogDapperRepository>();
+            _provider = service.BuildServiceProvider();
+            _uow=_provider.GetService<IEfUnitOfWork<BloggingContext>>();
+            _dapperUnitOfWork=_provider.GetService<IDapperUnitOfWork>();
         }
 
         [Test]
-        public async Task TestGetFirstOrDefaultAsyncGetsCorrectItem()
+        public async Task EfBaseRepository()
         {
-            var repository = new Repository<Country>();
-            var city = await repository.GetFirstOrDefaultAsync(predicate: t => t.Name == "A");
-            Assert.NotNull(city);
-            Assert.AreEqual(1, city.Id);
-        }
+			var repository = _uow.GetBaseRepository<Blog>();
+			var model = await repository.GetFirstOrDefaultAsync(predicate: t => t.Title=="123");
+			Assert.IsNull(model);
+		}
 
 
         [Test]
-        public async Task TestGetFirstOrDefaultAsyncReturnsNullValue()
+        public void DapperBaseRepository()
         {
-            var repository = new Repository<Country>();
-            var city = await repository.GetFirstOrDefaultAsync(predicate: t => t.Name == "Easy-E");
-            Assert.Null(city);
+	        var repository = _dapperUnitOfWork.GetBaseRepository<Blog>();
+	        var entity=new List<Blog>
+	                   {
+                           new Blog
+                           {
+	                           Url = "null2223",
+	                           Title = "asdasdasdas",
+                           },
+                           new Blog
+                           {
+	                           Url = "null3444444",
+	                           Title = "asdasdasdas",
+                           }
+	                   };
+	        var res=repository.Insert(entity.ToArray());
+            Assert.IsTrue(res);
         }
 
         [Test]
-        public async Task TestGetFirstOrDefaultAsyncCanInclude()
+        public void DapperRepository()
         {
-            var repository = new Repository<City>();
-            var city = await repository.GetFirstOrDefaultAsync(
-                predicate: c => c.Name == "A",
-                include: source => source.Include(t => t.Towns));
-            Assert.NotNull(city);
-            Assert.NotNull(city.Towns);
+	        var repository = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
+            var entity=new Blog
+                       {
+	                       Url = "null",
+	                       Title = "asdasdasdas",
+                       };
+	        var res=repository.Insert(entity,true);
+	        Assert.IsTrue(res);
         }
-
-
-
-
-
-        [Test]
-        public void GetPagedList()
-        {
-            var repository = new Repository<City>();
-            var page = repository.GetPagedList(predicate:null, include: source => source.Include(t => t.Country));
-
-            Assert.NotNull(page.TotalCount==6);
-        }
-
-
-
-        [Test]
-        public async Task ToPagedListAsyncTest()
-        {
-            var items = db.Customers.Where(t => t.Age > 1);
-
-            var page = await items.ToPagedListAsync(1, 2);
-
-            Assert.NotNull(page);
-
-        }
-
-
-
-
-
-
-
-        #region 数据
-
-
-        public List<Customer> TestItems()
-        {
-            return new List<Customer>()
-            {
-                new Customer(){Name="A", Age=1},
-                new Customer(){Name="B", Age=1},
-                new Customer(){Name="C", Age=2},
-                new Customer(){Name="D", Age=3},
-                new Customer(){Name="E", Age=4},
-                new Customer(){Name="F", Age=5},
-            };
-        }
-
-        protected static List<Country> TestCountries => new List<Country>
-        {
-            new Country {Id = 1, Name = "A"},
-            new Country {Id = 2, Name = "B"}
-        };
-
-        public static List<City> TestCities => new List<City>
-        {
-            new City { Id = 1, Name = "A", CountryId = 1},
-            new City { Id = 2, Name = "B", CountryId = 2},
-            new City { Id = 3, Name = "C", CountryId = 1},
-            new City { Id = 4, Name = "D", CountryId = 2},
-            new City { Id = 5, Name = "E", CountryId = 1},
-            new City { Id = 6, Name = "F", CountryId = 2},
-        };
-
-        public static List<Town> TestTowns => new List<Town>
-        {
-            new Town { Id = 1, Name="TownA", CityId = 1 },
-            new Town { Id = 2, Name="TownB", CityId = 2 },
-            new Town { Id = 3, Name="TownC", CityId = 3 },
-            new Town { Id = 4, Name="TownD", CityId = 4 },
-            new Town { Id = 5, Name="TownE", CityId = 5 },
-            new Town { Id = 6, Name="TownF", CityId = 6 },
-        };
-
-        #endregion
-
 
     }
 }

@@ -1,35 +1,29 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+using PlutoData.Collections;
+using PlutoData.Interface;
+using PlutoData.Uows;
+
+using System;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Transactions;
-
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.EntityFrameworkCore.Storage.Internal;
-using Microsoft.Extensions.Logging;
-
-using PlutoData.Collections;
-using PlutoData.Extensions;
-using PlutoData.Interface;
 
 namespace apisample.Controllers
 {
-    [Route("api/[controller]")]
+	[Route("api/[controller]")]
     [ApiController]
     public class ValuesController : ControllerBase
     {
-        private readonly IUnitOfWork<BloggingContext> _unitOfWork;
+        private readonly IEfUnitOfWork<BloggingContext> _unitOfWork;
         private ILogger<ValuesController> _logger;
-        private readonly ICustomBlogRepository _customBlogRepository;
+        private readonly IEfRepository<Blog> _customBlogRepository;
 
         public ValuesController(
-            IUnitOfWork<BloggingContext> unitOfWork,
+            IEfUnitOfWork<BloggingContext> unitOfWork,
             ILogger<ValuesController> logger)
         {
             _unitOfWork = unitOfWork;

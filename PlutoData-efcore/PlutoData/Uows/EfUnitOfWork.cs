@@ -1,30 +1,27 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using PlutoData.Extensions;
+using PlutoData.Interface;
+using PlutoData.Interface.Base;
+using System;
+using System.Collections.Concurrent;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage;
-using PlutoData.Extensions;
-using PlutoData.Interface;
 
-
-namespace PlutoData
+namespace PlutoData.Uows
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TContext"></typeparam>
-    public class UnitOfWork<TContext> : IUnitOfWork<TContext> where TContext : DbContext
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TContext"></typeparam>
+	public class EfUnitOfWork<TContext> : IEfUnitOfWork<TContext> where TContext : DbContext
     {
-        private Dictionary<Type, object> repositories;
+        private ConcurrentDictionary<Type, object> repositories;
         private readonly TContext _context;
         private bool disposed = false;
 
@@ -37,10 +34,10 @@ namespace PlutoData
 
 
         /// <summary>
-        /// 初始化的新实例 <see cref="UnitOfWork{TContext}"/> class.
+        /// 初始化的新实例 <see cref="EfUnitOfWork{TContext}"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
-        public UnitOfWork(TContext context)
+        public EfUnitOfWork(TContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
@@ -58,11 +55,11 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public TRepository GetRepository<TRepository>() where TRepository : IRepository
+        public TRepository GetRepository<TRepository>() where TRepository : IEfRepository
         {
             if (repositories == null)
             {
-                repositories = new Dictionary<Type, object>();
+                repositories = new ConcurrentDictionary<Type, object>();
             }
             var type = typeof(TRepository);
             if (repositories.ContainsKey(type))
@@ -81,31 +78,26 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public IRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new()
+        public IEfRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new()
         {
             if (repositories == null)
             {
-                repositories = new Dictionary<Type, object>();
+                repositories = new ConcurrentDictionary<Type, object>();
             }
-            var type = typeof(IRepository<TEntity>);
+            var type = typeof(IEfRepository<TEntity>);
             if (repositories.ContainsKey(type))
             {
-                return (IRepository<TEntity>)repositories[type];
+                return (IEfRepository<TEntity>)repositories[type];
             }
-            var repository = _context.GetService<IRepository<TEntity>>();
+            var repository = _context.GetService<IEfRepository<TEntity>>();
             if (repository == null)
             {
-                throw new NullReferenceException($"{typeof(IRepository<TEntity>)} not register");
+                throw new NullReferenceException($"{typeof(IEfRepository<TEntity>)} not register");
             }
             repository.SetDbContext(_context);
             repositories[type] = repository;
             return repository;
         }
-
-
-
-
-
 
         /// <inheritdoc />
         public IExecutionStrategy CreateExecutionStrategy()
@@ -124,7 +116,7 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks)
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IEfUnitOfWork<TContext>[] unitOfWorks)
         {
             using (var ts = new TransactionScope())
             {

@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using PlutoData.Attrs;
 
 
 namespace apisample
@@ -25,12 +27,15 @@ namespace apisample
 
     #region entitys
 
+    [Table("Blogs")]
     public class Blog
     {
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string Url { get; set; }
         public string Title { get; set; }
 
+        [DapperIgnore]
         public List<Post> Posts { get; set; }
     }
 

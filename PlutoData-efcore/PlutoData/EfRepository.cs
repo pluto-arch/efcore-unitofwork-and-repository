@@ -1,4 +1,9 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Query;
+using PlutoData.Collections;
+using PlutoData.Interface;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -6,16 +11,15 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Query;
-using PlutoData.Collections;
-using PlutoData.Interface;
 
 
 namespace PlutoData
 {
-    public class Repository<TEntity> : IRepository<TEntity> where TEntity : class
+	/// <summary>
+	/// ef core 仓储
+	/// </summary>
+	/// <typeparam name="TEntity"></typeparam>
+	public class EfRepository<TEntity> : IEfRepository<TEntity> where TEntity : class
     {
         protected DbContext _dbContext;
         protected DbSet<TEntity> _dbSet;
@@ -45,13 +49,13 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public IQueryable<TEntity> GetAll(bool disableTracking=false)
+        public virtual IQueryable<TEntity> GetAll(bool disableTracking=false)
         {
             return disableTracking ? _dbSet.AsNoTracking() : _dbSet;
         }
 
         /// <inheritdoc />
-        public IQueryable<TEntity> GetAll(
+        public virtual IQueryable<TEntity> GetAll(
             Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>,
                 IOrderedQueryable<TEntity>> orderBy = null,
@@ -96,7 +100,7 @@ namespace PlutoData
         /// <summary>
         /// 单个scope内设置不追踪
         /// </summary>
-        public void SetNoTracking()=>this._dbSet.AsNoTracking();
+        public virtual void SetNoTracking()=>this._dbSet.AsNoTracking();
         
         
         /// <inheritdoc />
@@ -470,7 +474,7 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public bool Exists(Expression<Func<TEntity, bool>> selector = null)
+        public virtual bool Exists(Expression<Func<TEntity, bool>> selector = null)
         {
             if (selector == null)
             {
@@ -481,18 +485,16 @@ namespace PlutoData
                 return _dbSet.Any(selector);
             }
         }
+
         /// <inheritdoc />
-        public async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> selector = null, CancellationToken cancellationToken = default)
+        public virtual async Task<bool> ExistsAsync(Expression<Func<TEntity, bool>> selector = null, CancellationToken cancellationToken = default)
         {
             if (selector == null)
-            {
-                return await _dbSet.AnyAsync(cancellationToken);
-            }
+	            return await _dbSet.AnyAsync(cancellationToken);
             else
-            {
-                return await _dbSet.AnyAsync(selector, cancellationToken);
-            }
+	            return await _dbSet.AnyAsync(selector, cancellationToken);
         }
+
         /// <inheritdoc />
         public virtual TEntity Insert(TEntity entity)
         {
@@ -563,13 +565,13 @@ namespace PlutoData
         public virtual void Delete(IEnumerable<TEntity> entities) => _dbSet.RemoveRange(entities);
 
         /// <inheritdoc />
-        public async Task<IList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
+        public virtual async Task<IList<TEntity>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _dbSet.ToListAsync(cancellationToken);
         }
 
         /// <inheritdoc />
-        public async Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null,
+        public virtual async Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null,
             Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
             Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
             bool disableTracking = false, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
@@ -607,7 +609,7 @@ namespace PlutoData
         }
 
         /// <inheritdoc />
-        public void ChangeEntityState(TEntity entity, EntityState state)
+        public virtual void ChangeEntityState(TEntity entity, EntityState state)
         {
             _dbContext.Entry(entity).State = state;
         }
