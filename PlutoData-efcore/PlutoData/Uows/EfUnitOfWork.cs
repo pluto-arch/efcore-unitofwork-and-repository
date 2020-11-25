@@ -52,6 +52,51 @@ namespace PlutoData.Uows
             get { return _currentTransaction != null; }
         }
 
+        /// <inheritdoc />
+        public TRepository GetDapperRepository<TRepository>() where TRepository : IDapperRepository
+        {
+	        if (repositories == null)
+	        {
+		        repositories = new ConcurrentDictionary<Type, object>();
+	        }
+	        var type = typeof(TRepository);
+	        if (repositories.ContainsKey(type))
+	        {
+		        return (TRepository)repositories[type];
+	        }
+	        var dapperUow = _context.GetService<IDapperUnitOfWork>();
+	        if (dapperUow == null)
+	        {
+		        throw new NullReferenceException($"{typeof(IDapperUnitOfWork)} not register");
+	        }
+            var repository=dapperUow.GetRepository<TRepository>();
+	        repository.SetDbContext(dapperUow.DapperDbContext);
+	        repositories[type] = repository;
+	        return repository;
+        }
+
+        /// <inheritdoc />
+        public IDapperRepository<TEntity> GetDapperBaseRepository<TEntity>() where TEntity : class, new()
+        {
+	        if (repositories == null)
+	        {
+		        repositories = new ConcurrentDictionary<Type, object>();
+	        }
+	        var type = typeof(IDapperRepository<TEntity>);
+	        if (repositories.ContainsKey(type))
+	        {
+		        return (IDapperRepository<TEntity>)repositories[type];
+	        }
+	        var dapperUow = _context.GetService<IDapperUnitOfWork>();
+	        if (dapperUow == null)
+	        {
+		        throw new NullReferenceException($"{typeof(IDapperUnitOfWork)} not register");
+	        }
+	        var repository=dapperUow.GetBaseRepository<TEntity>();
+	        repository.SetDbContext(dapperUow.DapperDbContext);
+	        repositories[type] = repository;
+	        return repository;
+        }
 
 
         /// <inheritdoc />

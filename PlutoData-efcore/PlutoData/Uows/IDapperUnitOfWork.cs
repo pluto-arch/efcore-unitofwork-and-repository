@@ -7,6 +7,11 @@ namespace PlutoData
 	public interface IDapperUnitOfWork: IDisposable
 	{
 		/// <summary>
+		/// 
+		/// </summary>
+		DapperDbContext DapperDbContext {get;}
+
+		/// <summary>
 		/// 获取基本的仓储
 		/// </summary>
 		/// <typeparam name="TEntity"></typeparam>

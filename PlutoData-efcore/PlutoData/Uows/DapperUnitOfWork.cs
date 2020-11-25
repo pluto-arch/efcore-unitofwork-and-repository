@@ -4,6 +4,8 @@ using PlutoData.Interface;
 using PlutoData.Interface.Base;
 using System;
 using System.Collections.Concurrent;
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
 
 namespace PlutoData.Uows
 {
@@ -24,6 +26,9 @@ namespace PlutoData.Uows
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 		}
+
+		/// <inheritdoc />
+		public DapperDbContext DapperDbContext =>_context;
 
 		/// <inheritdoc />
 		public IDapperRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new()

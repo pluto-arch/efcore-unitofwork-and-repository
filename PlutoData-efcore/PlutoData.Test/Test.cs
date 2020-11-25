@@ -31,7 +31,8 @@ namespace PlutoData.Test
 	                                                            opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
                                                             });
             service.AddRepository();
-            service.AddDapperUnitOfWork("Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+            //service.AddDapperUnitOfWork("Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+            service.AddDapperUnitOfWork<BloggingContext>();
             service.AddScoped<IBlogDapperRepository,BlogDapperRepository>();
             _provider = service.BuildServiceProvider();
             _uow=_provider.GetService<IEfUnitOfWork<BloggingContext>>();
@@ -51,34 +52,17 @@ namespace PlutoData.Test
         public void DapperBaseRepository()
         {
 	        var repository = _dapperUnitOfWork.GetBaseRepository<Blog>();
-	        var entity=new List<Blog>
-	                   {
-                           new Blog
-                           {
-	                           Url = "null2223",
-	                           Title = "asdasdasdas",
-                           },
-                           new Blog
-                           {
-	                           Url = "null3444444",
-	                           Title = "asdasdasdas",
-                           }
-	                   };
-	        var res=repository.Insert(entity.ToArray());
-            Assert.IsTrue(res);
         }
 
         [Test]
-        public void DapperRepository()
+        public async Task DapperRepository()
         {
-	        var repository = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
-            var entity=new Blog
-                       {
-	                       Url = "null",
-	                       Title = "asdasdasdas",
-                       };
-	        var res=repository.Insert(entity,true);
-	        Assert.IsTrue(res);
+            var tr= await _uow.BeginTransactionAsync();
+	        var repository = _uow.GetDapperRepository<IBlogDapperRepository>();
+            var entity=repository.GetAll();
+            _uow.SaveChanges();
+            tr.Commit();
+            Assert.IsNotEmpty(entity);
         }
 
     }

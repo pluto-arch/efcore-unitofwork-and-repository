@@ -45,6 +45,28 @@ namespace PlutoData.Uows
 
 
         /// <summary>
+        /// 活动共享ef链接的仓储
+        /// </summary>
+        /// <typeparam name="TRepository"></typeparam>
+        /// <returns></returns>
+        /// <remarks>
+        /// 执行操作时，不可使用Using包裹IDbConnection对象
+        /// </remarks>
+        TRepository GetDapperRepository<TRepository>() where TRepository : IDapperRepository;
+
+
+        /// <summary>
+        /// 活动共享ef链接的仓储
+        /// </summary>
+        /// <typeparam name="TEntity"></typeparam>
+        /// <returns></returns>
+        /// <remarks>
+        /// 执行操作时，不可使用Using包裹IDbConnection对象
+        /// </remarks>
+        IDapperRepository<TEntity> GetDapperBaseRepository<TEntity>() where TEntity : class, new();
+
+
+        /// <summary>
         /// 返回一个数据库执行策略
         /// </summary>
         /// <returns></returns>

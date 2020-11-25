@@ -92,5 +92,27 @@ namespace PlutoData
 	        return service;
         }
 
+
+        /// <summary>
+        /// 添加dapper 单元工作
+        /// </summary>
+        /// <param name="service"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddDapperUnitOfWork<TDbContext>(this IServiceCollection service) where TDbContext:DbContext
+        {
+	        service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
+	        service.AddScoped<DapperDbContext>(sp=>
+	                                           {
+		                                           var efUow=sp.GetService<IEfUnitOfWork<TDbContext>>();
+		                                           if (efUow!=null)
+		                                           {
+			                                           return new DapperDbContext(sp,efUow.DbContext);
+		                                           }
+                                                   throw new ArgumentNullException(nameof(TDbContext));
+	                                           });
+	        service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
+	        return service;
+        }
+
     }
 }
