@@ -16,7 +16,7 @@ namespace PlutoData.Test
 	public class MixTest:BaseTest
 	{
 		/// <inheritdoc />
-		public MixTest() : base(3)
+		public MixTest() : base(Flag.Both)
 		{
 
 		}

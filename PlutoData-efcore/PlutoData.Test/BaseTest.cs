@@ -17,16 +17,21 @@ using PlutoData.Interface.Base;
 namespace PlutoData.Test
 {
     
-
+    public enum Flag
+    {
+        Both,
+        EfCore,
+        Dapper
+    }
 
 
 	[TestFixture]
     public class BaseTest
     {
-		private int _flag;
+		private Flag _flag;
 
 
-	    public BaseTest(int flag)
+	    public BaseTest(Flag flag)
 	    {
 		    _flag=flag;
 	    }
@@ -40,7 +45,7 @@ namespace PlutoData.Test
         {
             var service=new ServiceCollection();
             service.AddControllers();
-            if (_flag==1) // onlyEf
+            if (_flag==Flag.EfCore) // onlyEf
             {
 	            service.AddUnitOfWorkDbContext<BloggingContext>(opt =>
 	                                                            {
@@ -50,12 +55,12 @@ namespace PlutoData.Test
 	                                                            });
             }
 
-            if (_flag==2)
+            if (_flag==Flag.Dapper)
             {
 	            service.AddDapperUnitOfWork("Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
             }
 
-            if (_flag==3)
+            if (_flag==Flag.Both)
             {
 	            service.AddDapperUnitOfWork<BloggingContext>(opt =>
 	                                                         {
