@@ -44,7 +44,7 @@ namespace PlutoData
 			get
 			{
 				if (IsShareEfCoreDbContext)
-					return DbContext._dbContext.Database.CurrentTransaction?.GetDbTransaction();
+					return DbContext._dbContext?.Database?.CurrentTransaction?.GetDbTransaction();
 				throw new InvalidOperationException("未配置efcore 上下文");
 			}
 		}

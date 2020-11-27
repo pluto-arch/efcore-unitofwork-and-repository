@@ -24,8 +24,4 @@
     <ProjectReference Include="..\PlutoData\PlutoData.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Repositorys\Ef\" />
-  </ItemGroup>
-
 </Project>

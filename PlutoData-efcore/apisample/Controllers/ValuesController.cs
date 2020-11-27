@@ -7,10 +7,12 @@ using PlutoData.Interface;
 using PlutoData.Uows;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using apisample.Dapper;
 
 namespace apisample.Controllers
 {
@@ -21,7 +23,7 @@ namespace apisample.Controllers
         private readonly IEfUnitOfWork<BloggingContext> _unitOfWork;
         private ILogger<ValuesController> _logger;
         private readonly IEfRepository<Blog> _customBlogRepository;
-
+        private Random r=new Random();
         public ValuesController(
             IEfUnitOfWork<BloggingContext> unitOfWork,
             ILogger<ValuesController> logger)
@@ -162,6 +164,62 @@ namespace apisample.Controllers
                 Console.WriteLine(e);
             }
             await _unitOfWork.SaveChangesAsync();
+        }
+
+
+        [HttpGet("test")]
+        public string Test()
+        {
+	        EfInsert();
+	        EfUpdate();
+	        DapperInsert();
+            return "123123";
+        }
+
+        
+        private void EfInsertRange()
+        {
+	        var entities=new List<Blog>();
+	        for (int i = 0; i < 4000; i++)
+	        {
+		        entities.Add(new Blog
+		                     {
+			                     Url = $"{r.Next(1,99999)}_efefefef",
+			                     Title = $"{r.Next(1,99999)}_efefefef",
+		                     });
+	        }
+	        var efRep = _unitOfWork.GetBaseRepository<Blog>();
+	        efRep.Insert(entities);
+	        _unitOfWork.SaveChanges();
+        }
+
+
+        private void EfInsert()
+        {
+	        var efRep = _unitOfWork.GetBaseRepository<Blog>();
+	        efRep.Insert(new Blog
+	                     {
+		                     Url = $"{r.Next(1,99999)}_efefefef",
+		                     Title = $"{r.Next(1,99999)}_efefefef",
+	                     });
+	        _unitOfWork.SaveChanges();
+        }
+        private void EfUpdate()
+        {
+	        var efRep = _unitOfWork.GetBaseRepository<Blog>();
+	        var blog=efRep.GetFirstOrDefault(predicate:x=>x.Id>0);
+	        blog.Title=$"ef_update_{r.Next(1,888888)}";
+	        _unitOfWork.SaveChanges();
+        }
+
+        private void DapperInsert()
+        {
+	        var dapperRep = _unitOfWork.GetDapperRepository<IBlogDapperRepository>();
+	        dapperRep.Insert(new
+	                         {
+		                         Url = $"{r.Next(1,99999)}_dapper",
+		                         Title = $"{r.Next(1,99999)}_dapper",
+	                         });
         }
 
 

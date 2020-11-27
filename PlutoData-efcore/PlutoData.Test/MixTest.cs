@@ -1,48 +1,27 @@
-﻿using apisample;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using NUnit.Framework;
-using PlutoData.Test.Repositorys.Dapper;
-using PlutoData.Uows;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using System.Transactions;
-using Microsoft.Data.SqlClient;
+using apisample;
+using Microsoft.EntityFrameworkCore;
+using NUnit.Framework;
+
+using PlutoData.Interface;
 using PlutoData.Interface.Base;
+using PlutoData.Test.Repositorys.Dapper;
 
 namespace PlutoData.Test
 {
 	[TestFixture]
-    public class MixTest
-    {
+	public class MixTest:BaseTest
+	{
+		/// <inheritdoc />
+		public MixTest() : base(3)
+		{
 
-        private IServiceProvider _provider;
-        private IEfUnitOfWork<BloggingContext> _uow;
-        private IDapperUnitOfWork _dapperUnitOfWork;
-        [SetUp]
-        public void SetUp()
-        {
-            var service=new ServiceCollection();
-            service.AddControllers();
-            service.AddUnitOfWorkDbContext<BloggingContext>(opt =>
-                                                            {
-	                                                            opt.UseSqlServer(
-	                                                             "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-	                                                            opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
-                                                            });
-            service.AddRepository();
-            //service.AddDapperUnitOfWork("Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-            service.AddDapperUnitOfWork<BloggingContext>();
-            service.AddScoped<IBlogDapperRepository,BlogDapperRepository>();
-            _provider = service.BuildServiceProvider();
-            _uow=_provider.GetService<IEfUnitOfWork<BloggingContext>>();
-            _dapperUnitOfWork=_provider.GetService<IDapperUnitOfWork>();
-        }
+		}
 
-        [Test]
+		[Test]
         public async Task EfBaseRepository()
         {
 			var repository = _uow.GetBaseRepository<Blog>();
@@ -192,5 +171,62 @@ namespace PlutoData.Test
         }
 
 
-    }
+		[Test]
+		public void Multi_Operator()
+		{
+			for (int i = 0; i < 4000; i++)
+			{
+				EfInsert();
+				EfUpdate();
+				DapperInsert();
+			}
+		}
+
+
+		private void EfInsertRange()
+		{
+			var entities=new List<Blog>();
+			for (int i = 0; i < 4000; i++)
+			{
+				entities.Add(new Blog
+				             {
+					             Url = $"{r.Next(1,99999)}_efefefef",
+					             Title = $"{r.Next(1,99999)}_efefefef",
+				             });
+			}
+			var efRep = _uow.GetBaseRepository<Blog>();
+			efRep.Insert(entities);
+			_uow.SaveChanges();
+		}
+
+		private void EfInsert()
+		{
+			var efRep = _uow.GetBaseRepository<Blog>();
+			efRep.Insert(new Blog
+			             {
+				             Url = $"{r.Next(1,99999)}_efefefef",
+				             Title = $"{r.Next(1,99999)}_efefefef",
+			             });
+			_uow.SaveChanges();
+		}
+		private void EfUpdate()
+		{
+			var efRep = _uow.GetBaseRepository<Blog>();
+			var blog=efRep.GetFirstOrDefault(predicate:x=>x.Id>0,disableTracking:true);
+			blog.Title=$"ef_update_{r.Next(1,888888)}";
+			_uow.SaveChanges();
+		}
+
+		private void DapperInsert()
+		{
+			var dapperRep = _uow.GetDapperRepository<IBlogDapperRepository>();
+			dapperRep.Insert(new
+			                 {
+				                 Url = $"{r.Next(1,99999)}_dapper",
+				                 Title = $"{r.Next(1,99999)}_dapper",
+			                 });
+		}
+
+	}
+
 }

@@ -84,14 +84,13 @@ namespace apisample
 
             services.AddRepository();
 
-            services.AddScoped<DapperDbContext>(sp=>
-                                                {
-                                                    return new DapperDbContext(sp,"Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-                                                });
+            //services.AddScoped<DapperDbContext>(sp=>
+            //                                    {
+            //                                        return new DapperDbContext(sp,"Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+            //                                    });
 
 
-                //.AddCustomRepository<Blog, CustomBlogRepository>();
-
+	        //services.AddDapperUnitOfWork<BloggingContext>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });

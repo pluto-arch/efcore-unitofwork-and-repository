@@ -30,6 +30,8 @@ namespace PlutoData
             Action<DbContextOptionsBuilder> optionBuilder)
             where TContext : DbContext
         {
+	        if(optionBuilder==null)
+		        throw new ArgumentNullException(nameof(TContext));
 	        services
                 .AddDbContext<TContext>(optionBuilder,ServiceLifetime.Scoped)
                 .AddEfUnitOfWork<TContext>();
@@ -46,7 +48,7 @@ namespace PlutoData
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
         /// <returns></returns>
-        public static IServiceCollection AddEfUnitOfWork<TContext>(this IServiceCollection services)
+        private static IServiceCollection AddEfUnitOfWork<TContext>(this IServiceCollection services)
             where TContext : DbContext
         {
             services.AddScoped<IEfUnitOfWork<TContext>, EfUnitOfWork<TContext>>();
@@ -96,10 +98,18 @@ namespace PlutoData
         /// <summary>
         /// 添加dapper 单元工作
         /// </summary>
-        /// <param name="service"></param>
         /// <returns></returns>
-        public static IServiceCollection AddDapperUnitOfWork<TDbContext>(this IServiceCollection service) where TDbContext:DbContext
+        public static IServiceCollection AddDapperUnitOfWork<TDbContext>(
+		        this IServiceCollection service,
+		        Action<DbContextOptionsBuilder> optionBuilder) where TDbContext:DbContext
         {
+            
+            if(optionBuilder==null)
+				throw new ArgumentNullException(nameof(TDbContext));
+	        service
+			       .AddDbContext<TDbContext>(optionBuilder,ServiceLifetime.Scoped) 
+			       .AddEfUnitOfWork<TDbContext>();
+			       
 	        service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
 	        service.AddScoped<DapperDbContext>(sp=>
 	                                           {
