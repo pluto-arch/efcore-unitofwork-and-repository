@@ -26,10 +26,8 @@ namespace PlutoData
 		{
 			get
 			{
-				if (DbContext._dbContext!=null)
-				{
+				if (IsShareEfCoreDbContext)
 					return DbContext._dbContext.Database.GetDbConnection();
-				}
 				if (DbContext._dbConnection!=null)
 				{
 					return DbContext._dbConnection;
@@ -45,10 +43,8 @@ namespace PlutoData
 		{
 			get
 			{
-				if (DbContext._dbContext!=null)
-				{
-					return DbContext._dbContext.Database.CurrentTransaction.GetDbTransaction();
-				}
+				if (IsShareEfCoreDbContext)
+					return DbContext._dbContext.Database.CurrentTransaction?.GetDbTransaction();
 				throw new InvalidOperationException("未配置efcore 上下文");
 			}
 		}
@@ -75,9 +71,7 @@ namespace PlutoData
 		protected async Task<TResult> Execute<TResult>(Func<IDbConnection, Task<TResult>> func)
 		{
 			if (IsShareEfCoreDbContext)
-			{
 				return await func(DbConnection);
-			}
 			using (var connection = DbConnection)
 			{
 				return await func(connection);

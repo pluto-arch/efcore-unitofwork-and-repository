@@ -7,5 +7,8 @@ namespace PlutoData.Test.Repositorys.Dapper
 	public interface IBlogDapperRepository:IDapperRepository<Blog>
 	{
 		IEnumerable<Blog> GetAll();
+
+		bool Insert(object entity);
+
 	}
 }
