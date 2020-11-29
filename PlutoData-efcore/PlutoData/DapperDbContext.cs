@@ -21,9 +21,10 @@ namespace PlutoData
 		/// </summary>
 		internal readonly IServiceProvider _service;
 		internal IDbConnection _dbConnection;
+        internal string _connectionString;
 		private bool isShareEfDbContext=false;
 		internal readonly DbContext _dbContext;
-
+        public Guid Id=Guid.NewGuid();
 		/// <summary>
 		/// 纯dapper
 		/// </summary>
@@ -32,15 +33,14 @@ namespace PlutoData
 		public DapperDbContext(IServiceProvider service,string connectionString)
 		{
 			_service=service??throw new ArgumentNullException(nameof(service));
-			// 打开连接
-			_dbConnection = SqlClientFactory.Instance.CreateConnection();
-			if (_dbConnection != null)
+            _connectionString = connectionString??throw new ArgumentNullException(nameof(connectionString));
+			var dbConnection = SqlClientFactory.Instance.CreateConnection();
+			if (dbConnection != null)
 			{
-				_dbConnection.ConnectionString = connectionString;
-				if (_dbConnection.State != ConnectionState.Open)
-					_dbConnection.Open();
+                dbConnection.ConnectionString = connectionString;
 			}
-		}
+            _dbConnection = dbConnection;
+        }
 
 		/// <summary>
 		/// 和ef共用

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 using PlutoData.Interface.Base;
 
 namespace PlutoData.Interface
@@ -16,5 +18,15 @@ namespace PlutoData.Interface
 		/// </summary>
 		string EntityMapName { get; }
 
-	}
+        IDbConnection DbConnection { get; }
+
+
+        IDbTransaction DbTransaction { get; }
+
+
+        bool BeginTransaction(Func<IDbTransaction,bool> func);
+
+
+        Task<bool> BeginTransactionAsync(Func<IDbTransaction,Task<bool>> func);
+    }
 }

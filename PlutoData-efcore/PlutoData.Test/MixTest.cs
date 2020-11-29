@@ -186,14 +186,11 @@ namespace PlutoData.Test
 		private void EfInsertRange()
 		{
 			var entities=new List<Blog>();
-			for (int i = 0; i < 4000; i++)
-			{
-				entities.Add(new Blog
-				             {
-					             Url = $"{r.Next(1,99999)}_efefefef",
-					             Title = $"{r.Next(1,99999)}_efefefef",
-				             });
-			}
+            entities.Add(new Blog
+            {
+                Url = $"{r.Next(1,99999)}_efefefef",
+                Title = $"{r.Next(1,99999)}_efefefef",
+            });
 			var efRep = _uow.GetBaseRepository<Blog>();
 			efRep.Insert(entities);
 			_uow.SaveChanges();

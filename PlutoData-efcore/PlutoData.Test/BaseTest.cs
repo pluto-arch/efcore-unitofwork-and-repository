@@ -8,6 +8,7 @@ using PlutoData.Uows;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
@@ -29,7 +30,7 @@ namespace PlutoData.Test
     public class BaseTest
     {
 		private Flag _flag;
-
+        private string connStr = "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;MultipleActiveResultSets = true;";
 
 	    public BaseTest(Flag flag)
 	    {
@@ -49,27 +50,25 @@ namespace PlutoData.Test
             {
 	            service.AddUnitOfWorkDbContext<BloggingContext>(opt =>
 	                                                            {
-		                                                            opt.UseSqlServer(
-		                                                             "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+		                                                            opt.UseSqlServer(connStr);
 		                                                            opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
 	                                                            });
             }
 
-            if (_flag==Flag.Dapper)
+            if (_flag==Flag.Dapper)  // only dapper
             {
-	            service.AddDapperUnitOfWork("Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+	            service.AddDapperUnitOfWork(connStr);
             }
 
-            if (_flag==Flag.Both)
+            if (_flag==Flag.Both) // dapper & efcore
             {
 	            service.AddDapperUnitOfWork<BloggingContext>(opt =>
 	                                                         {
-		                                                         opt.UseSqlServer(
-		                                                          "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+		                                                         opt.UseSqlServer(connStr);
 		                                                         opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
 	                                                         });
             }
-            service.AddRepository();
+            service.AddRepository(Assembly.GetExecutingAssembly());
             _provider = service.BuildServiceProvider();
             _uow=_provider.GetService<IEfUnitOfWork<BloggingContext>>();
             _dapperUnitOfWork=_provider.GetService<IDapperUnitOfWork>();

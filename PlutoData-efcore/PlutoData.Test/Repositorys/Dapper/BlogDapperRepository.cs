@@ -16,7 +16,7 @@ namespace PlutoData.Test.Repositorys.Dapper
 			//return DbConnection.Query<Blog>($"SELECT * FROM {EntityMapName}");
 			return Execute(async conn=>
 			        {
-						return await conn.QueryAsync<Blog>($"SELECT * FROM {EntityMapName}",transaction:DbTransaction);
+						return await conn.QueryAsync<Blog>($"SELECT * FROM {EntityMapName}");
 			        }).Result;
 
 		}
@@ -28,7 +28,7 @@ namespace PlutoData.Test.Repositorys.Dapper
 			               {
 							   var sql=$@"INSERT INTO {EntityMapName}({nameof(Blog.Url)},{nameof(Blog.Title)}) 
 										  VALUES (@{nameof(Blog.Url)},@{nameof(Blog.Title)})";
-							   return (await conn.ExecuteAsync(sql,entity,transaction:DbTransaction))>0;
+							   return (await conn.ExecuteAsync(sql,entity))>0;
 			               }).Result;
 		}
 	}
