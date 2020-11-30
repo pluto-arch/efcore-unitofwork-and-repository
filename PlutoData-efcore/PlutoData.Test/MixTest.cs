@@ -47,17 +47,20 @@ namespace PlutoData.Test
 				using (tr)
 				{
 					var entity = dapperRep.GetAll();
-					dapperRep.Insert(new Blog
-					                 {
-						                 Url = "Mix_EfTransaction_With_Error",
-						                 Title = "Mix_EfTransaction_With_Error",
-					                 });
+
 					efRep.Insert(new Blog
 					             {
-						             Id = 32, 
 						             Url = "Mix_EfTransaction_With_Error",
 						             Title = "Mix_EfTransaction_With_Error",
 					             });
+
+					dapperRep.Insert(new Blog
+					                 {
+						                 Id = 32, 
+						                 Url = "Mix_EfTransaction_With_Error",
+						                 Title = "Mix_EfTransaction_With_Error",
+					                 });
+				
 					await _uow.SaveChangesAsync();
 					await tr.CommitAsync();
 				}

@@ -24,7 +24,7 @@ namespace PlutoData
         internal string _connectionString;
 		private bool isShareEfDbContext=false;
 		internal readonly DbContext _dbContext;
-        public Guid Id=Guid.NewGuid();
+
 		/// <summary>
 		/// 纯dapper
 		/// </summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
@@ -19,6 +20,7 @@ namespace PlutoData
 	public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class, new()
     {
         private IDbTransaction _dbTransaction;
+		private IDbConnection _dbConnection;
 
         /// <summary>
 		/// 链接对象
@@ -29,21 +31,34 @@ namespace PlutoData
 			{
 				if (IsShareEfCoreDbContext)
 					return DbContext._dbContext.Database.GetDbConnection();
-                if (DbContext._dbConnection != null)
-                {
-                    DbContext._dbConnection.ConnectionString = DbContext._connectionString;
-                    if (DbContext._dbConnection.State!=ConnectionState.Open)
-                    {
-                            DbContext._dbConnection.Open();
-                    }
-                    return DbContext._dbConnection;
-                }
+				if (_dbConnection!=null)
+				{
+					return _dbConnection;
+				}
+                //if (DbContext._dbConnection != null)
+                //{
+	               // if (string.IsNullOrEmpty(DbContext._dbConnection.ConnectionString))
+	               // {
+		              //  DbContext._dbConnection.ConnectionString = DbContext._connectionString;
+	               // }
+                //    if (DbContext._dbConnection.State!=ConnectionState.Open)
+                //    {
+                //            DbContext._dbConnection.Open();
+                //    }
+                //    return DbContext._dbConnection;
+                //}
 				throw new InvalidOperationException("初始化DbConnection异常，请检查设置");
+			}
+			set
+			{
+				if (IsShareEfCoreDbContext)
+					throw new InvalidOperationException("由efcore托管，无法更改");
+				_dbConnection=DbContext._dbConnection;
 			}
 		}
 
 		/// <summary>
-		/// efcore 共享时使用
+		/// 事务对象
 		/// </summary>
 		public IDbTransaction DbTransaction
 		{
@@ -67,44 +82,8 @@ namespace PlutoData
             set
             {
                 if (IsShareEfCoreDbContext)
-                {
-                    throw new InvalidOperationException("与efcore 共享，不可修改");
-                }
+	                throw new InvalidOperationException("由efcore托管，无法更改");
                 _dbTransaction = value;
-            }
-        }
-
-        public bool BeginTransaction(Func<IDbTransaction, bool> func)
-        {
-            IDbTransaction tr = null;
-            if (IsShareEfCoreDbContext)
-            {
-                throw new InvalidOperationException("与efcore共享，不可使用此方法");
-            }
-            else if(_dbTransaction==null)
-            {
-                throw new ArgumentNullException(nameof(_dbTransaction));
-            }
-            using (tr=_dbTransaction)
-            {
-                return func.Invoke(tr);
-            }
-        }
-
-        public Task<bool> BeginTransactionAsync(Func<IDbTransaction, Task<bool>> func)
-        {
-            IDbTransaction tr = null;
-            if (IsShareEfCoreDbContext)
-            {
-                throw new InvalidOperationException("与efcore共享，不可使用此方法");
-            }
-            else if(_dbTransaction==null)
-            {
-                throw new ArgumentNullException(nameof(_dbTransaction));
-            }
-            using (tr=_dbTransaction)
-            {
-                return func.Invoke(tr);
             }
         }
 
@@ -152,6 +131,31 @@ namespace PlutoData
 			}
 		}
 
+		/// <inheritdoc />
+		public T BeginTransaction<T>(Func<IDbTransaction, T> func)
+		{
+			//if (InTransaction)
+			//	return await func(Transaction);
+
+			using (var connection = this.DbConnection)
+			{
+				if (connection.State!=ConnectionState.Open)
+					connection.Open();
+				using (var transaction = connection.BeginTransaction())
+				{
+					this._dbTransaction = transaction;
+					try
+					{
+						return func(transaction);
+					}
+					catch (Exception ex)
+					{
+						transaction?.Rollback();
+						throw ex;
+					}
+				}
+			}
+		}
 
 		private bool IsShareEfCoreDbContext=>DbContext._dbContext!=null;
 

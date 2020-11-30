@@ -39,6 +39,7 @@ namespace apisample
         public List<Post> Posts { get; set; }
     }
 
+    [Table("Posts")]
     public class Post
     {
         public int Id { get; set; }

@@ -1,5 +1,6 @@
 ﻿using System;
 using apisample;
+using Dapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,19 @@ namespace PlutoData.Test
         public void DbTransaction()
         {
             var rep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
+            var rep2=_dapperUnitOfWork.GetBaseRepository<Post>();
+            var res = rep.BeginTransaction<bool>(transaction =>
+                                                 {
+	                                                 rep2.DbTransaction=transaction;
+	                                                 var res= rep.Insert(new Blog
+	                                                            {
+		                                                            Url = "dapper_DbTransaction",
+		                                                            Title = "dapper_DbTransaction",
+	                                                            });
+	                                                var aaa=res&(rep2.DbConnection.Execute($@"INSERT INTO [dbo].[Posts]([Title], [Content], [BlogId]) VALUES (N'12312', N's', NULL);
+	                                                ")>0);
+                                                     return aaa;
+                                                 });
             
         }
     }
