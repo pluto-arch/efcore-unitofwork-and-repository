@@ -22,40 +22,13 @@ namespace PlutoData
         private IDbTransaction _dbTransaction;
 		private IDbConnection _dbConnection;
 
-        /// <summary>
-		/// 链接对象
-		/// </summary>
-        public IDbConnection DbConnection
-		{
-			get
-			{
-				if (IsShareEfCoreDbContext)
-					return DbContext._dbContext.Database.GetDbConnection();
-				if (_dbConnection!=null)
-				{
-					return _dbConnection;
-				}
-                //if (DbContext._dbConnection != null)
-                //{
-	               // if (string.IsNullOrEmpty(DbContext._dbConnection.ConnectionString))
-	               // {
-		              //  DbContext._dbConnection.ConnectionString = DbContext._connectionString;
-	               // }
-                //    if (DbContext._dbConnection.State!=ConnectionState.Open)
-                //    {
-                //            DbContext._dbConnection.Open();
-                //    }
-                //    return DbContext._dbConnection;
-                //}
-				throw new InvalidOperationException("初始化DbConnection异常，请检查设置");
-			}
-			set
-			{
-				if (IsShareEfCoreDbContext)
-					throw new InvalidOperationException("由efcore托管，无法更改");
-				_dbConnection=DbContext._dbConnection;
-			}
-		}
+
+        public IDbConnection GetDbConnection()
+        {
+            _dbConnection= DbContext.GetDbConnection();
+            return _dbConnection;
+        }
+
 
 		/// <summary>
 		/// 事务对象
@@ -64,20 +37,20 @@ namespace PlutoData
 		{
 			get
 			{
+                if (_dbTransaction!=null)
+                    return _dbTransaction;
                 if (IsShareEfCoreDbContext)
                 {
                     if (DbContext._dbContext==null)
                         throw new InvalidOperationException("未配置efcore 上下文");
-                    return DbContext._dbContext.Database?.CurrentTransaction?.GetDbTransaction();
+                    _dbTransaction= DbContext._dbContext.Database?.CurrentTransaction?.GetDbTransaction();
                 }
                 else
                 {
-                    if (_dbTransaction!=null)
-                    {
-                        return _dbTransaction;
-                    }
-                    throw new InvalidOperationException("未配置dbTransaction");
+                    if (_dbTransaction==null)
+                        _dbTransaction = _dbConnection.BeginTransaction();
                 }
+                return _dbTransaction;
 			}
             set
             {
@@ -121,38 +94,39 @@ namespace PlutoData
 		/// <remarks>
 		///	当使用纯dapper时 ，使用此执行T-SQL语句
 		/// </remarks>
-		protected async Task<TResult> Execute<TResult>(Func<IDbConnection, Task<TResult>> func)
+		protected async Task<TResult> Execute<TResult>(Func<IDbConnection,IDbTransaction, Task<TResult>> func)
 		{
 			if (IsShareEfCoreDbContext)
-				return await func(DbConnection);
-			using (var connection = DbConnection)
+				return await func(GetDbConnection(),null);
+            if (IsInTran)
+                return await func(GetDbConnection(),_dbTransaction);
+			using (var conn=GetDbConnection())
 			{
-				return await func(connection);
+				return await func(conn,null);
 			}
 		}
+
+        private bool IsInTran = false;
 
 		/// <inheritdoc />
 		public T BeginTransaction<T>(Func<IDbTransaction, T> func)
 		{
-			//if (InTransaction)
-			//	return await func(Transaction);
-
-			using (var connection = this.DbConnection)
+			using (var conn=GetDbConnection())
 			{
-				if (connection.State!=ConnectionState.Open)
-					connection.Open();
-				using (var transaction = connection.BeginTransaction())
-				{
-					this._dbTransaction = transaction;
-					try
-					{
-						return func(transaction);
-					}
-					catch (Exception ex)
-					{
-						transaction?.Rollback();
-						throw ex;
-					}
+				using (DbTransaction)
+                {
+                    IsInTran = true;
+                    try
+                    {
+                        var res= func(_dbTransaction);
+                        _dbTransaction.Commit();
+                        return res;
+                    }
+                    catch (Exception e)
+                    {
+                        IsInTran = false;
+                        return default;
+                    }
 				}
 			}
 		}

@@ -17,10 +17,10 @@ namespace PlutoData.Interface
 		/// 实体映射的表名
 		/// </summary>
 		string EntityMapName { get; }
-		/// <summary>
-		/// 连接对象
-		/// </summary>
-        IDbConnection DbConnection { get; }
+
+
+        IDbConnection GetDbConnection();
+
 		/// <summary>
 		/// 事务对象
 		/// </summary>

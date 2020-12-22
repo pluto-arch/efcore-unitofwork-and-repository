@@ -90,14 +90,6 @@ namespace PlutoData.Uows
 		/// <param name="disposing">The disposing.</param>
 		protected virtual void Dispose(bool disposing)
 		{
-			if (!disposed)
-			{
-				if (disposing)
-				{
-					// dispose the db context.
-					_context.Dispose();
-				}
-			}
 			disposed = true;
 		}
 

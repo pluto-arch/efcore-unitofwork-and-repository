@@ -14,9 +14,9 @@ namespace PlutoData.Test.Repositorys.Dapper
 		public IEnumerable<Blog> GetAll()
 		{
 			//return DbConnection.Query<Blog>($"SELECT * FROM {EntityMapName}");
-			return Execute(async conn=>
+			return Execute(async (conn,tran)=>
 			        {
-						return await conn.QueryAsync<Blog>($"SELECT * FROM {EntityMapName}");
+						return await conn.QueryAsync<Blog>($"SELECT * FROM {EntityMapName}",tran);
 			        }).Result;
 
 		}
@@ -24,11 +24,11 @@ namespace PlutoData.Test.Repositorys.Dapper
 		/// <inheritdoc />
 		public bool Insert(object entity)
 		{
-			return Execute(async conn=>
+			return Execute(async (conn,tran)=>
 			               {
 							   var sql=$@"INSERT INTO {EntityMapName}({nameof(Blog.Url)},{nameof(Blog.Title)}) 
 										  VALUES (@{nameof(Blog.Url)},@{nameof(Blog.Title)})";
-							   return (await conn.ExecuteAsync(sql,entity))>0;
+							   return (await conn.ExecuteAsync(sql,entity,tran))>0;
 			               }).Result;
 		}
 	}
