@@ -38,13 +38,12 @@ namespace PlutoData
                 {
                     if (DbContext._dbContext==null)
                         throw new InvalidOperationException("未配置efcore 上下文");
-                    _dbTransaction= DbContext._dbContext.Database?.CurrentTransaction?.GetDbTransaction();
+                    return DbContext._dbContext.Database?.CurrentTransaction?.GetDbTransaction();
                 }
                 else
                 {
-	                _dbTransaction= DbConnection.BeginTransaction();
+	                return DbConnection.BeginTransaction();
                 }
-               return _dbTransaction;
 			}
 			set
 			{
@@ -105,17 +104,18 @@ namespace PlutoData
 		/// <inheritdoc />
 		public T BeginTransaction<T>(Func<IDbTransaction, T> func)
 		{
+			_dbTransaction=null;
 			using (var conn=DbConnection)
 			{
 				if (conn.State!=ConnectionState.Open)
 					conn.Open();
-				using (var tr= DbTransaction)
+				using (_dbTransaction= DbTransaction)
                 {
                     IsInTran = true;
                     try
                     {
-                        var res= func(tr);
-                        tr.Commit();
+                        var res= func(_dbTransaction);
+                        _dbTransaction.Commit();
                         return res;
                     }
                     catch (Exception e)
