@@ -19,12 +19,12 @@ namespace PlutoData.Interface
 		string EntityMapName { get; }
 
 
-        IDbConnection GetDbConnection();
+        IDbConnection DbConnection{ get; }
 
 		/// <summary>
 		/// 事务对象
 		/// </summary>
-        IDbTransaction DbTransaction { get;set; }
+        IDbTransaction DbTransaction { get; set;}
 
 		/// <summary>
 		/// 事务中执行

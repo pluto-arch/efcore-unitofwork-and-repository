@@ -19,16 +19,9 @@ namespace PlutoData
 	/// <typeparam name="TEntity"></typeparam>
 	public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class, new()
     {
-        private IDbTransaction _dbTransaction;
-		private IDbConnection _dbConnection;
+		private IDbTransaction _dbTransaction;
 
-
-        public IDbConnection GetDbConnection()
-        {
-            _dbConnection= DbContext.GetDbConnection();
-            return _dbConnection;
-        }
-
+		public IDbConnection DbConnection=>DbContext.GetDbConnection();
 
 		/// <summary>
 		/// 事务对象
@@ -37,8 +30,10 @@ namespace PlutoData
 		{
 			get
 			{
-                if (_dbTransaction!=null)
-                    return _dbTransaction;
+				if (_dbTransaction!=null)
+				{
+					return _dbTransaction;
+				}
                 if (IsShareEfCoreDbContext)
                 {
                     if (DbContext._dbContext==null)
@@ -47,18 +42,17 @@ namespace PlutoData
                 }
                 else
                 {
-                    if (_dbTransaction==null)
-                        _dbTransaction = _dbConnection.BeginTransaction();
+	                _dbTransaction= DbConnection.BeginTransaction();
                 }
-                return _dbTransaction;
+               return _dbTransaction;
 			}
-            set
-            {
-                if (IsShareEfCoreDbContext)
-	                throw new InvalidOperationException("由efcore托管，无法更改");
-                _dbTransaction = value;
-            }
-        }
+			set
+			{
+				if (IsShareEfCoreDbContext)
+					throw new InvalidOperationException("由efcore托管，无法更改");
+				_dbTransaction = value;
+			}
+		}
 
         /// <summary>
 		/// dapper 上下文
@@ -97,10 +91,10 @@ namespace PlutoData
 		protected async Task<TResult> Execute<TResult>(Func<IDbConnection,IDbTransaction, Task<TResult>> func)
 		{
 			if (IsShareEfCoreDbContext)
-				return await func(GetDbConnection(),null);
+				return await func(DbConnection,null);
             if (IsInTran)
-                return await func(GetDbConnection(),_dbTransaction);
-			using (var conn=GetDbConnection())
+                return await func(DbConnection,DbTransaction);
+			using (var conn=DbConnection)
 			{
 				return await func(conn,null);
 			}
@@ -111,15 +105,17 @@ namespace PlutoData
 		/// <inheritdoc />
 		public T BeginTransaction<T>(Func<IDbTransaction, T> func)
 		{
-			using (var conn=GetDbConnection())
+			using (var conn=DbConnection)
 			{
-				using (DbTransaction)
+				if (conn.State!=ConnectionState.Open)
+					conn.Open();
+				using (var tr= DbTransaction)
                 {
                     IsInTran = true;
                     try
                     {
-                        var res= func(_dbTransaction);
-                        _dbTransaction.Commit();
+                        var res= func(tr);
+                        tr.Commit();
                         return res;
                     }
                     catch (Exception e)

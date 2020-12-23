@@ -1,5 +1,5 @@
 ﻿using System;
-
+using System.Threading;
 using apisample;
 
 using Dapper;
@@ -16,86 +16,90 @@ using PlutoData.Uows;
 
 namespace PlutoData.Test
 {
-    [TestFixture]
-    public class OnlyDapperTest : BaseTest
-    {
-        public OnlyDapperTest() : base(Flag.Dapper)
-        {
-        }
+	[TestFixture]
+	public class OnlyDapperTest : BaseTest
+	{
+		public OnlyDapperTest() : base(Flag.Dapper)
+		{
+		}
 
-        [Test]
-        public void GetRepository()
-        {
-            var rep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
-            Assert.IsTrue(rep != null && (rep is IDapperRepository repository));
+		[Test]
+		public void GetRepository()
+		{
+			var rep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
+			Assert.IsTrue(rep != null && (rep is IDapperRepository repository));
 
-            var rep2 = _dapperUnitOfWork.GetBaseRepository<Blog>();
-            Assert.IsTrue(rep2 != null && (rep2 is IDapperRepository repository2));
+			var rep2 = _dapperUnitOfWork.GetBaseRepository<Blog>();
+			Assert.IsTrue(rep2 != null && (rep2 is IDapperRepository repository2));
 
-            var dapperRep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
-            var entity = dapperRep.GetAll();
-            var res = dapperRep.Insert(new Blog
-            {
-                Url = "dapper_DbTransaction",
-                Title = "dapper_DbTransaction",
-            });
+			var dapperRep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
 
-            var ddfd = rep.Insert(new Blog
-            {
-                Url = "dapper_DbTransaction",
-                Title = "dapper_DbTransaction",
-            });
+			new Thread(() =>
+							   {
+								   var entity = dapperRep.GetAll();
+								   var res = dapperRep.Insert(new Blog
+								   {
+									   Url = "dapper_DbTransaction",
+									   Title = "dapper_DbTransaction",
+								   });
+							   }).Start();
 
-            Assert.IsTrue(res);
-        }
+			new Thread(() =>
+							   {
+								   var entity = dapperRep.GetAll();
+								   var ddfd = rep.Insert(new Blog
+								   {
+									   Url = "dapper_DbTransaction",
+									   Title = "dapper_DbTransaction",
+								   });
+							   }).Start();
+		}
 
 
-        [Test]
+		[Test]
 
-        public void DbTransaction() 
-        {
-            var rep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
+		public void DbTransaction()
+		{
+			var rep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
 
-            var rep2 = _dapperUnitOfWork.GetBaseRepository<Post>();
-            var res = rep.BeginTransaction<bool>(transaction =>
-                                                 {
-                                                     rep2.DbTransaction = transaction;
+			var rep2 = _dapperUnitOfWork.GetBaseRepository<Post>();
+			var res = rep.BeginTransaction<bool>(transaction =>
+												 {
+													 rep2.DbTransaction = transaction;
 
-                                                     var dsdsds= rep.GetDbConnection().GetHashCode();
+													 var dsdsds = rep.DbConnection.GetHashCode();
 
-                                                     var dsdsds222= rep2.GetDbConnection().GetHashCode();
-
-                                                     var res = rep.Insert(new Blog
-                                                     {
-                                                         Url = "1111111111111111111111",
-                                                         Title = "11111111111111111",
-                                                     });
-                                                     var aaa2 = rep2.GetDbConnection().Execute($@"INSERT INTO [dbo].[Posts]([Title], [Content]) VALUES (N'11111111111111', N'111111111111111111');
+													 var res = rep.Insert(new Blog
+													 {
+														 Url = $"{transaction.GetHashCode()}_111111111",
+														 Title = $"{rep2.DbTransaction.GetHashCode()}_1111111111",
+													 });
+													 var aaa2 = rep2.DbConnection.Execute($@"INSERT INTO [dbo].[Posts]([Title], [Content]) VALUES (N'dsdsds', N'dsdsds');
 	                                                ", transaction: transaction) > 0;
-                                                     return aaa2 & res;
-                                                 });
-            Assert.IsTrue(res);
+													 return aaa2 & res;
+												 });
+			Assert.IsTrue(res);
 
 
-            var res2 = rep.BeginTransaction<bool>(transaction =>
-            {
-                rep2.DbTransaction = transaction;
-                var res = rep.Insert(new Blog
-                {
-                    Url = "dapper_DbTransaction2222222222222222222222222",
-                    Title = "dapper_DbTransaction22222222222222222222222222222",
-                });
-                var aaa2 = rep2.GetDbConnection().Execute($@"INSERT INTO [dbo].[Posts]([Id],[Title], [Content]) VALUES (22223,N'22222222222', N'222222222222222222');
-	                                                ", transaction: transaction) > 0;
-                return aaa2 & res;
-            });
-            Assert.IsFalse(res2);
-            rep.Insert(new Blog
-            {
-                Url = "dapper_DbTransaction2_dddddddddddddddddddd",
-                Title = "dapper_DbTransaction2_dddddddddddddddddddd",
-            });
+			var res2 = rep.BeginTransaction<bool>(transaction =>
+			{
+				rep2.DbTransaction = transaction;
 
-        }
-    }
+				var dsdsds = rep.DbConnection.GetHashCode();
+
+				var dsdsds222 = rep2.DbConnection.GetHashCode();
+
+				var res = rep.Insert(new Blog
+				{
+					Url = $"{transaction.GetHashCode()}_22222222",
+					Title = $"{rep2.DbTransaction.GetHashCode()}_2222222",
+				});
+				var aaa2 = rep2.DbConnection.Execute($@"INSERT INTO [dbo].[Posts]([Id],[Title], [Content]) VALUES (22223,N'fffff', N'fffffff'); ", transaction: transaction) > 0;
+				return aaa2 & res;
+			});
+
+
+			Assert.IsFalse(res2);
+		}
+	}
 }
