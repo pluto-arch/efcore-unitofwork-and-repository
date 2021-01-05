@@ -11,6 +11,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using PlutoData.Models;
 
 
 namespace PlutoData
@@ -55,129 +56,29 @@ namespace PlutoData
         }
 
         /// <inheritdoc />
-        public virtual IQueryable<TEntity> GetAll(
-            Expression<Func<TEntity, bool>> predicate = null,
-            Func<IQueryable<TEntity>,
-                IOrderedQueryable<TEntity>> orderBy = null,
-            Func<IQueryable<TEntity>,
-                IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = false,
-            bool ignoreQueryFilters = false)
+        public virtual IQueryable<TEntity> GetAll(EntityQueryBase<TEntity> query)
         {
-            IQueryable<TEntity> query = _dbSet;
-
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
-
-            if (include != null)
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            if (ignoreQueryFilters)
-            {
-                query = query.IgnoreQueryFilters();
-            }
-
-            if (orderBy != null)
-            {
-                return orderBy(query);
-            }
-            else
-            {
-                return query;
-            }
+            return query.GetQuery(_dbSet);
         }
 
         /// <inheritdoc />
-        public virtual IPagedList<TEntity> GetPagedList(Expression<Func<TEntity, bool>> predicate = null,
-                                                Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-                                                Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-                                                int pageIndex = 1,
-                                                int pageSize = 20,
-                                                bool disableTracking = false,
-                                                bool ignoreQueryFilters = false)
+        public virtual IPagedList<TEntity> GetPagedList(EntityQueryBase<TEntity> query,
+                                                        int pageIndex = 1,
+                                                        int pageSize = 20)
         {
-            IQueryable<TEntity> query = _dbSet;
-
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
-
-            if (include != null)
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            if (ignoreQueryFilters)
-            {
-                query = query.IgnoreQueryFilters();
-            }
-
-            if (orderBy != null)
-            {
-                return orderBy(query).ToPagedList(pageIndex, pageSize);
-            }
-            else
-            {
-                return query.ToPagedList(pageIndex, pageSize);
-            }
+            var res = query.GetQuery(_dbSet);
+            return res.ToPagedList(pageIndex, pageSize);
         }
 
 
         /// <inheritdoc />
-        public virtual Task<IPagedList<TEntity>> GetPagedListAsync(Expression<Func<TEntity, bool>> predicate = null,
-                                                           Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-                                                           Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-                                                           int pageIndex = 1,
-                                                           int pageSize = 20,
-                                                           bool disableTracking = false,
-                                                           CancellationToken cancellationToken = default(CancellationToken),
-                                                           bool ignoreQueryFilters = false)
+        public virtual Task<IPagedList<TEntity>> GetPagedListAsync(EntityQueryBase<TEntity> query,
+                                                                   int pageIndex = 1,
+                                                                   int pageSize = 20,
+                                                                   CancellationToken cancellationToken = default(CancellationToken))
         {
-            IQueryable<TEntity> query = _dbSet;
-
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
-
-            if (include != null)
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            if (ignoreQueryFilters)
-            {
-                query = query.IgnoreQueryFilters();
-            }
-
-            if (orderBy != null)
-            {
-                return orderBy(query).ToPagedListAsync(pageIndex, pageSize, cancellationToken);
-            }
-            else
-            {
-                return query.ToPagedListAsync(pageIndex, pageSize, cancellationToken);
-            }
+            var res = query.GetQuery(_dbSet);
+            return res.ToPagedListAsync(pageIndex, pageSize, cancellationToken: cancellationToken);
         }
 
         /// <inheritdoc />
@@ -268,83 +169,18 @@ namespace PlutoData
         }
 
         /// <inheritdoc />
-        public virtual TEntity GetFirstOrDefault(Expression<Func<TEntity, bool>> predicate = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = false,
-            bool ignoreQueryFilters = false)
+        public virtual TEntity GetFirstOrDefault(EntityQueryBase<TEntity> query)
         {
-            IQueryable<TEntity> query = _dbSet;
-
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
-
-            if (include != null)
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            if (ignoreQueryFilters)
-            {
-                query = query.IgnoreQueryFilters();
-            }
-
-            if (orderBy != null)
-            {
-                return orderBy(query).FirstOrDefault();
-            }
-            else
-            {
-                return query.FirstOrDefault();
-            }
+            var res = query.GetQuery(_dbSet);
+            return res.FirstOrDefault();
         }
 
 
         /// <inheritdoc />
-        public virtual async Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = false,
-            bool ignoreQueryFilters = false,
-            CancellationToken cancellationToken = default)
+        public virtual async Task<TEntity> GetFirstOrDefaultAsync(EntityQueryBase<TEntity> query, CancellationToken cancellationToken = default)
         {
-            IQueryable<TEntity> query = _dbSet;
-
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
-
-            if (include != null)
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            if (ignoreQueryFilters)
-            {
-                query = query.IgnoreQueryFilters();
-            }
-
-            if (orderBy != null)
-            {
-                return await orderBy(query).FirstOrDefaultAsync();
-            }
-            else
-            {
-                return await query.FirstOrDefaultAsync();
-            }
+            var res = query.GetQuery(_dbSet);
+            return await res.FirstOrDefaultAsync(cancellationToken: cancellationToken);
         }
 
         /// <inheritdoc />
@@ -564,41 +400,10 @@ namespace PlutoData
         }
 
         /// <inheritdoc />
-        public virtual async Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null,
-            Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-            Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-            bool disableTracking = false, bool ignoreQueryFilters = false, CancellationToken cancellationToken = default)
+        public virtual async Task<IList<TEntity>> GetAllAsync(EntityQueryBase<TEntity> query, CancellationToken cancellationToken = default)
         {
-            IQueryable<TEntity> query = _dbSet;
-
-            if (disableTracking)
-            {
-                query = query.AsNoTracking();
-            }
-
-            if (include != null)       
-            {
-                query = include(query);
-            }
-
-            if (predicate != null)
-            {
-                query = query.Where(predicate);
-            }
-
-            if (ignoreQueryFilters)
-            {
-                query = query.IgnoreQueryFilters();
-            }
-
-            if (orderBy != null)
-            {
-                return await orderBy(query).ToListAsync(cancellationToken);
-            }
-            else
-            {
-                return await query.ToListAsync(cancellationToken);
-            }
+            var res = query.GetQuery(_dbSet);
+            return await res.ToListAsync(cancellationToken);
         }
 
         /// <inheritdoc />

@@ -11,6 +11,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using PlutoData.Models;
 
 namespace PlutoData.Interface
 {
@@ -26,49 +27,30 @@ namespace PlutoData.Interface
 		/// </summary>
 		string EntityMapName { get; }
 
-		/// <summary>
-		/// 获取分页数据 <see cref="IPagedList{T}"/> 
+        /// <summary>
+		/// 获取分页数据
 		/// </summary>
-		/// <param name="predicate">查询条件</param>
-		/// <param name="orderBy">排序表达式</param>
-		/// <param name="include">导航属性表达式</param>
-		/// <param name="pageIndex">默认1</param>
-		/// <param name="pageSize">默认20</param>
-		/// <param name="disableTracking">是否关闭追踪 default is <c>true</c>.</param>
-		/// <param name="ignoreQueryFilters">忽略查询过滤器</param>
-		/// <returns>返回值: <see cref="IPagedList{TEntity}"/> </returns>
-		IPagedList<TEntity> GetPagedList(Expression<Func<TEntity, bool>> predicate = null,
-			Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-			Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-			int pageIndex = 1,
-			int pageSize = 20,
-			bool disableTracking = false,
-			bool ignoreQueryFilters = false);
+		/// <param name="query"></param>
+		/// <param name="pageIndex"></param>
+		/// <param name="pageSize"></param>
+		/// <returns> <see cref="IPagedList{TEntity}"/></returns>
+		IPagedList<TEntity> GetPagedList(EntityQueryBase<TEntity> query,
+                                         int pageIndex = 1,
+                                         int pageSize = 20);
 
 
 		/// <summary>
-		/// 获取分页数据 <see cref="IPagedList{TEntity}"/>
+		/// 获取分页数据
 		/// </summary>
-		/// <param name="predicate">查询条件</param>
-		/// <param name="orderBy">排序表达式</param>
-		/// <param name="include">导航属性表达式</param>
-		/// <param name="pageIndex">默认1</param>
-		/// <param name="pageSize">默认20</param>
-		/// <param name="disableTracking">是否关闭追踪. default is <c>true</c>.</param>
-		/// <param name="cancellationToken">
-		///     A <see cref="CancellationToken" /> to observe while waiting for the task to complete.
-		/// </param>
-		/// <param name="ignoreQueryFilters">Ignore query filters</param>
-		/// <returns>返回： <see cref="IPagedList{TEntity}"/></returns>
-		/// <remarks>默认不追踪.</remarks>
-		Task<IPagedList<TEntity>> GetPagedListAsync(Expression<Func<TEntity, bool>> predicate = null,
-			Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-			Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-			int pageIndex = 1,
-			int pageSize = 20,
-			bool disableTracking = false,
-			CancellationToken cancellationToken = default(CancellationToken),
-			bool ignoreQueryFilters = false);
+		/// <param name="query"></param>
+		/// <param name="pageIndex"></param>
+		/// <param name="pageSize"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<IPagedList<TEntity>> GetPagedListAsync(EntityQueryBase<TEntity> query,
+                                                    int pageIndex = 1,
+                                                    int pageSize = 20,
+                                                    CancellationToken cancellationToken = default(CancellationToken));
 
 
 		/// <summary>
@@ -122,20 +104,9 @@ namespace PlutoData.Interface
 		/// <summary>
 		/// 获取第一个或默认实体
 		/// </summary>
-		/// <param name="predicate">条件表达式</param>
-		/// <param name="orderBy">排序表达式</param>
-		/// <param name="include">导航属性</param>
-		/// <param name="disableTracking"> default is <c>false</c>.</param>
-		/// <param name="ignoreQueryFilters">Ignore query filters</param>
-		/// <returns>一个 <see>
-		///         <cref>TEntity</cref>
-		///     </see>
-		/// </returns>
-		TEntity GetFirstOrDefault(Expression<Func<TEntity, bool>> predicate = null,
-								  Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-								  Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-								  bool disableTracking = false,
-								  bool ignoreQueryFilters = false);
+		/// <param name="query"></param>
+		/// <returns></returns>
+		TEntity GetFirstOrDefault(EntityQueryBase<TEntity> query);
 
 
 		/// <summary>
@@ -183,24 +154,12 @@ namespace PlutoData.Interface
 
 
 		/// <summary>
-		///  获取第一个或默认实体
+		/// 获取第一个或默认实体
 		/// </summary>
-		/// <param name="predicate">条件表达式</param>
-		/// <param name="orderBy">排序表达式</param>
-		/// <param name="include">导航属性</param>
-		/// <param name="disableTracking">default is <c>false</c>.</param>
-		/// <param name="ignoreQueryFilters">Ignore query filters</param>
+		/// <param name="query"></param>
 		/// <param name="cancellationToken"></param>
-		/// <returns>一个 <see>
-		///         <cref>TEntity</cref>
-		///     </see>
-		/// </returns>
-		Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate = null,
-											 Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-											 Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-											 bool disableTracking = false,
-											 bool ignoreQueryFilters = false,
-											 CancellationToken cancellationToken = default);
+		/// <returns></returns>
+		Task<TEntity> GetFirstOrDefaultAsync(EntityQueryBase<TEntity> query, CancellationToken cancellationToken = default);
 
 
 
@@ -236,19 +195,11 @@ namespace PlutoData.Interface
 		IQueryable<TEntity> GetAll(bool disableTracking = false);
 
 		/// <summary>
-		/// 获取列表
+		/// 查询全部
 		/// </summary>
-		/// <param name="predicate"></param>
-		/// <param name="orderBy"></param>
-		/// <param name="include"></param>
-		/// <param name="disableTracking"></param>
-		/// <param name="ignoreQueryFilters"></param>
+		/// <param name="query"></param>
 		/// <returns></returns>
-		IQueryable<TEntity> GetAll(Expression<Func<TEntity, bool>> predicate = null,
-			Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-			Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-			bool disableTracking = false,
-			bool ignoreQueryFilters = false);
+		IQueryable<TEntity> GetAll(EntityQueryBase<TEntity> query);
 
 		/// <summary>
 		/// 获取所有
@@ -260,19 +211,8 @@ namespace PlutoData.Interface
 		/// <summary>
 		/// 获取所有
 		/// </summary>
-		/// <param name="predicate"></param>
-		/// <param name="orderBy"></param>
-		/// <param name="include"></param>
-		/// <param name="disableTracking"></param>
-		/// <param name="ignoreQueryFilters"></param>
-		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task<IList<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate = null,
-			Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-			Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-			bool disableTracking = false,
-			bool ignoreQueryFilters = false,
-			CancellationToken cancellationToken = default);
+		Task<IList<TEntity>> GetAllAsync(EntityQueryBase<TEntity> query, CancellationToken cancellationToken = default);
 
 
 
