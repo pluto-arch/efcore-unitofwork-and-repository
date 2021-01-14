@@ -36,6 +36,12 @@ namespace PlutoData
 		{
 			_service=service??throw new ArgumentNullException(nameof(service));
             _connectionString = connectionString??throw new ArgumentNullException(nameof(connectionString));
+			//var dbConnection = SqlClientFactory.Instance.CreateConnection();
+			//if (dbConnection != null)
+			//{
+   //             dbConnection.ConnectionString = connectionString;
+			//}
+   //         _dbConnection = dbConnection;
         }
 
 		/// <summary>
@@ -43,31 +49,40 @@ namespace PlutoData
 		/// </summary>
 		public DapperDbContext(IServiceProvider service,DbContext efDbContext)
 		{
-            _service=service;
-			_dbContext=efDbContext ?? throw new ArgumentNullException(nameof(efDbContext));
+			if (efDbContext==null)
+			{
+				throw new ArgumentNullException(nameof(efDbContext));
+			}
+			_service=service;
+			//_dbConnection = efDbContext.Database.GetDbConnection();
+			_dbContext=efDbContext;
 			isShareEfDbContext=true;
 		}
 
-        /// <summary>
-        /// 获取链接
-        /// </summary>
-        /// <returns></returns>
+
         public IDbConnection GetDbConnection()
         {
             if (_dbConnection != null)
             {
-                ResetDapperDbConnectionString();
+                if (_dbConnection.State!=ConnectionState.Open)
+                {
+                    _dbConnection.ConnectionString = _connectionString;
+                }
                 return _dbConnection;
             }
             if (isShareEfDbContext)
             {
                 if (_dbContext==null)
-                    throw new InvalidOperationException("无效的EF CORE配置");
+                    throw new InvalidOperationException("缺少efcore 配置");
                 _dbConnection=_dbContext.Database.GetDbConnection();
             }
             else
             {
-                var dbConnection = createDapperDbConnection();
+                var dbConnection = SqlClientFactory.Instance.CreateConnection();
+                if (dbConnection != null)
+                {
+                    dbConnection.ConnectionString = _connectionString;
+                }
                 _dbConnection= dbConnection;
             }
 
@@ -106,30 +121,5 @@ namespace PlutoData
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
         }
-
-
-        #region private
-        private void ResetDapperDbConnectionString()
-        {
-            if (_dbConnection.State != ConnectionState.Open && string.IsNullOrEmpty(_dbConnection.ConnectionString))
-            {
-                _dbConnection.ConnectionString = _connectionString;
-            }
-        }
-
-
-        private IDbConnection createDapperDbConnection()
-        {
-            var dbConnection = SqlClientFactory.Instance.CreateConnection();
-            if (dbConnection != null)
-            {
-                dbConnection.ConnectionString = _connectionString;
-            }
-
-            return dbConnection;
-        }
-        
-
-        #endregion
     }
 }

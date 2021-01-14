@@ -5,16 +5,11 @@ VisualStudioVersion = 16.0.29519.181
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlutoData", "PlutoData\PlutoData.csproj", "{C85459DB-4AE5-4927-9FC3-69D50EFD391C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlutoData.Test", "PlutoData.Test\PlutoData.Test.csproj", "{97DD8885-062D-4682-A047-3D9FC833C0A5}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlutoData.Test", "PlutoData.Test\PlutoData.Test.csproj", "{97DD8885-062D-4682-A047-3D9FC833C0A5}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "sample", "sample", "{54ECF0C8-7298-4C3D-9801-47A87B856E19}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "apisample", "apisample\apisample.csproj", "{101EAE19-CC6A-4A7E-AD50-5FDA82268DC5}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{98403782-97DA-4046-A920-EA3FD7625B1A}"
-	ProjectSection(SolutionItems) = preProject
-		.editorconfig = .editorconfig
-	EndProjectSection
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "apisample", "apisample\apisample.csproj", "{101EAE19-CC6A-4A7E-AD50-5FDA82268DC5}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

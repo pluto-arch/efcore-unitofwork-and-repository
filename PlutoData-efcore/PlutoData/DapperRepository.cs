@@ -118,9 +118,10 @@ namespace PlutoData
                         _dbTransaction.Commit();
                         return res;
                     }
-                    finally
+                    catch (Exception e)
                     {
                         IsInTran = false;
+                        return default;
                     }
 				}
 			}
