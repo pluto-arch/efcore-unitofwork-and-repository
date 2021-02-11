@@ -18,43 +18,46 @@ namespace PlutoData
     /// </summary>
     public static class UnitOfWorkServiceCollectionExtensions
     {
+
         /// <summary>
-        /// 添加unitofwork和dbcontext
+        /// 添加ef单元工作
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
         /// <param name="optionBuilder"></param>
         /// <returns></returns>
-        public static IServiceCollection AddUnitOfWorkDbContext<TContext>(
-            this IServiceCollection services, 
-            Action<DbContextOptionsBuilder> optionBuilder)
-            where TContext : DbContext
+        public static IServiceCollection AddEfUnitOfWork<TContext>(
+            this IServiceCollection services,
+            Action<DbContextOptionsBuilder> optionBuilder) where TContext : DbContext
         {
-	        if(optionBuilder==null)
-		        throw new ArgumentNullException(nameof(TContext));
-	        services
-                .AddDbContext<TContext>(optionBuilder,ServiceLifetime.Scoped)
+            if (optionBuilder == null)
+                throw new ArgumentNullException("缺少初始化参数：DbContextOptionsBuilder");
+            services
+                .AddDbContext<TContext>(optionBuilder, ServiceLifetime.Scoped)
                 .AddEfUnitOfWork<TContext>();
             return services;
         }
 
         /// <summary>
-        /// 添加单个unitofwork
-        /// 需要单独添加dbcontext
-        /// <see>
-        ///     <cref>services.AddDbContext</cref>
-        /// </see>
+        /// 添加ef单元工作
         /// </summary>
         /// <typeparam name="TContext"></typeparam>
         /// <param name="services"></param>
+        /// <param name="optionBuilder"></param>
         /// <returns></returns>
-        private static IServiceCollection AddEfUnitOfWork<TContext>(this IServiceCollection services)
-            where TContext : DbContext
+        public static IServiceCollection AddEfUnitOfWorkUsingPool<TContext>(
+            this IServiceCollection services,
+            Action<DbContextOptionsBuilder> optionBuilder) where TContext : DbContext
         {
-            services.AddScoped<IEfUnitOfWork<TContext>, EfUnitOfWork<TContext>>();
-            services.TryAddScoped(typeof(IEfRepository<>), typeof(EfRepository<>));
+            if (optionBuilder == null)
+                throw new ArgumentNullException("缺少初始化参数：DbContextOptionsBuilder");
+            services
+                .AddDbContext<TContext>(optionBuilder, ServiceLifetime.Scoped)
+                .AddEfUnitOfWork<TContext>();
             return services;
         }
+
+
 
         /// <summary>
         /// 添加仓储
@@ -76,53 +79,97 @@ namespace PlutoData
         }
 
 
-
         /// <summary>
         /// 添加dapper 单元工作
         /// </summary>
         /// <param name="service"></param>
         /// <param name="connStr"></param>
         /// <returns></returns>
-        public static IServiceCollection AddDapperUnitOfWork(this IServiceCollection service,string connStr)
+        public static IServiceCollection AddDapperUnitOfWork(this IServiceCollection service, string connStr)
         {
-	        service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
-	        service.AddScoped<DapperDbContext>(sp=>
-	                                           {
-		                                           return new DapperDbContext(sp,connStr);
-	                                           });
-	        service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
-	        return service;
+            service.AddScoped<DapperDbContext>(sp => new DapperDbContext(sp, connStr));
+            service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
+            service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
+            return service;
         }
 
 
         /// <summary>
-        /// 添加dapper 单元工作
+        /// 添加ef/dapper混合单元工作
         /// </summary>
         /// <returns></returns>
-        public static IServiceCollection AddDapperUnitOfWork<TDbContext>(
-		        this IServiceCollection service,
-		        Action<DbContextOptionsBuilder> optionBuilder) where TDbContext:DbContext
+        public static IServiceCollection AddHybridUnitOfWork<TDbContext>(
+                this IServiceCollection service,
+                Action<DbContextOptionsBuilder> optionBuilder) where TDbContext : DbContext
         {
-            
-            if(optionBuilder==null)
-				throw new ArgumentNullException(nameof(TDbContext));
-	        service
-			       .AddDbContext<TDbContext>(optionBuilder,ServiceLifetime.Scoped) 
-			       .AddEfUnitOfWork<TDbContext>();
-			       
-	        service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
-	        service.AddScoped<DapperDbContext>(sp=>
-	                                           {
-		                                           var efUow=sp.GetService<IEfUnitOfWork<TDbContext>>();
-		                                           if (efUow!=null)
-		                                           {
-			                                           return new DapperDbContext(sp,efUow.DbContext);
-		                                           }
+
+            if (optionBuilder == null)
+                throw new ArgumentNullException(nameof(TDbContext));
+            service
+                   .AddDbContext<TDbContext>(optionBuilder, ServiceLifetime.Scoped)
+                   .AddEfUnitOfWork<TDbContext>();
+
+            service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
+            service.AddScoped<DapperDbContext>(sp =>
+                                               {
+                                                   var efUow = sp.GetService<IEfUnitOfWork<TDbContext>>();
+                                                   if (efUow != null)
+                                                   {
+                                                       return new DapperDbContext(sp, efUow.DbContext);
+                                                   }
                                                    throw new ArgumentNullException(nameof(TDbContext));
-	                                           });
-	        service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
-	        return service;
+                                               });
+            service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
+            return service;
         }
 
+
+        /// <summary>
+        /// 添加ef/dapper混合单元工作，使用dbcontextpool
+        /// </summary>
+        /// <returns></returns>
+        public static IServiceCollection AddHybridUnitOfWorkUsingPool<TDbContext>(
+            this IServiceCollection service,
+            Action<DbContextOptionsBuilder> optionBuilder,
+            int poolSize = 128) where TDbContext : DbContext
+        {
+
+            if (optionBuilder == null)
+                throw new ArgumentNullException(nameof(TDbContext));
+            service
+                .AddDbContextPool<TDbContext>(optionBuilder, poolSize)
+                .AddEfUnitOfWork<TDbContext>();
+
+            service.AddScoped(typeof(IDapperRepository<>), typeof(DapperRepository<>));
+            service.AddScoped<DapperDbContext>(sp =>
+            {
+                var efUow = sp.GetService<IEfUnitOfWork<TDbContext>>();
+                if (efUow != null)
+                {
+                    return new DapperDbContext(sp, efUow.DbContext);
+                }
+                throw new ArgumentNullException(nameof(TDbContext));
+            });
+            service.AddScoped<IDapperUnitOfWork, DapperUnitOfWork>();
+            return service;
+        }
+
+
+        #region private 
+        /// <summary>
+        /// 添加unitofwork
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        private static IServiceCollection AddEfUnitOfWork<TContext>(this IServiceCollection services)
+            where TContext : DbContext
+        {
+            services.AddScoped<IEfUnitOfWork<TContext>, EfUnitOfWork<TContext>>();
+            services.TryAddScoped(typeof(IEfRepository<>), typeof(EfRepository<>));
+            return services;
+        }
+
+        #endregion
     }
 }

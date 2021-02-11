@@ -10,6 +10,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
 using PlutoData.Extensions;
 using PlutoData.Interface;
+using PlutoData.Models;
 
 namespace PlutoData
 {
@@ -17,10 +18,13 @@ namespace PlutoData
 	/// dapper仓储
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public class DapperRepository<TEntity> : IDapperRepository<TEntity> where TEntity : class, new()
+	public partial class DapperRepository<TEntity,Tkey> : IDapperRepository<TEntity> where TEntity : class, new()
     {
 		private IDbTransaction _dbTransaction;
 
+		/// <summary>
+		/// 
+		/// </summary>
 		public IDbConnection DbConnection=>DbContext.GetDbConnection();
 
 		/// <summary>
@@ -34,20 +38,17 @@ namespace PlutoData
 				{
 					return _dbTransaction;
 				}
-                if (IsShareEfCoreDbContext)
+                if (DependOnEf)
                 {
                     if (DbContext._dbContext==null)
                         throw new InvalidOperationException("未配置efcore 上下文");
                     return DbContext._dbContext.Database?.CurrentTransaction?.GetDbTransaction();
                 }
-                else
-                {
-	                return DbConnection.BeginTransaction();
-                }
+                return DbConnection.BeginTransaction();
 			}
 			set
 			{
-				if (IsShareEfCoreDbContext)
+				if (DependOnEf)
 					throw new InvalidOperationException("由efcore托管，无法更改");
 				_dbTransaction = value;
 			}
@@ -64,17 +65,14 @@ namespace PlutoData
         {
             get
             {
-                if (IsShareEfCoreDbContext)
+                if (DependOnEf)
                 {
                     if (DbContext._dbContext==null)
                         throw new InvalidOperationException("未配置efcore 上下文");
                     var entityType = DbContext._dbContext.Model.FindEntityType(typeof(TEntity));
                     return entityType.GetTableName();
                 }
-                else
-                {
-                    return typeof(TEntity).GetMainTableName();
-                }
+                return typeof(TEntity).GetMainTableName();
             }
         }
 
@@ -87,9 +85,9 @@ namespace PlutoData
 		/// <remarks>
 		///	当使用纯dapper时 ，使用此执行T-SQL语句
 		/// </remarks>
-		protected async Task<TResult> Execute<TResult>(Func<IDbConnection,IDbTransaction, Task<TResult>> func)
+		protected async Task<TResult> ExecuteAsync<TResult>(Func<IDbConnection,IDbTransaction, Task<TResult>> func)
 		{
-			if (IsShareEfCoreDbContext)
+			if (DependOnEf)
 				return await func(DbConnection,null);
             if (IsInTran)
                 return await func(DbConnection,DbTransaction);
@@ -98,6 +96,29 @@ namespace PlutoData
 				return await func(conn,null);
 			}
 		}
+
+
+        /// <summary>
+        /// 执行
+        /// </summary>
+        /// <typeparam name="TResult"></typeparam>
+        /// <param name="func"></param>
+        /// <returns></returns>
+        /// <remarks>
+        ///	当使用纯dapper时 ，使用此执行T-SQL语句
+        /// </remarks>
+        protected TResult Execute<TResult>(Func<IDbConnection,IDbTransaction, TResult> func)
+        {
+            if (DependOnEf)
+                return func(DbConnection,null);
+            if (IsInTran)
+                return func(DbConnection,DbTransaction);
+            using (var conn=DbConnection)
+            {
+                return func(conn,null);
+            }
+        }
+
 
         private bool IsInTran = false;
 
@@ -118,16 +139,170 @@ namespace PlutoData
                         _dbTransaction.Commit();
                         return res;
                     }
-                    catch (Exception e)
+                    finally
                     {
                         IsInTran = false;
-                        return default;
                     }
 				}
 			}
 		}
 
-		private bool IsShareEfCoreDbContext=>DbContext._dbContext!=null;
+		private bool DependOnEf=>DbContext._dbContext!=null;
 
 	}
+
+
+	/// <summary>
+	/// 
+	/// </summary>
+    public partial class DapperRepository<TEntity,Tkey>
+    {
+		/// <summary>
+		/// insert
+		/// </summary>
+		/// <param name="entity"></param>
+		/// <returns></returns>
+        public int Insert(TEntity entity)
+        {
+            return Execute((conn, tran) => conn.Insert(entity, tran)??0);
+        }
+
+        /// <summary>
+        /// insert
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public Task<int?> InsertAsync(TEntity entity)
+        {
+            return ExecuteAsync((conn, tran) =>conn.InsertAsync(entity, tran));
+        }
+
+        /// <summary>
+        /// update
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public int Update(TEntity entity)
+        {
+            return Execute((conn, tran) => conn.Update(entity, tran));
+        }
+
+
+        /// <summary>
+        /// update
+        /// </summary>
+        /// <param name="entity"></param>
+        /// <returns></returns>
+        public Task<int> UpdateAsync(TEntity entity)
+        {
+            return ExecuteAsync((conn, tran) => conn.UpdateAsync(entity, tran));
+        }
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <param name="entity"></param>
+        public int Delete(TEntity entity)
+        {
+            return Execute((conn, tran) => conn.Delete(entity, tran));
+        }
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        /// <param name="entity"></param>
+        public Task<int> DeleteAsync(TEntity entity)
+        {
+            return ExecuteAsync((conn, tran) => conn.DeleteAsync(entity, tran));
+        }
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        public int DeleteList(object whereCondition)
+        {
+            return Execute((conn, tran) => conn.DeleteList<TEntity>(whereCondition, tran));
+        }
+
+
+        /// <summary>
+        /// Delete
+        /// </summary>
+        public Task<int> DeleteListAsync(object whereCondition)
+        {
+            return ExecuteAsync((conn, tran) => conn.DeleteListAsync<TEntity>(whereCondition, tran));
+        }
+
+        /// <summary>
+        /// 查询单个
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public TEntity Get(Tkey key)
+        {
+            return Execute((conn, tran) => conn.Get<TEntity>(key));
+        }
+
+        /// <summary>
+        /// 查询单个
+        /// </summary>
+        /// <returns></returns>
+        public TResult Get<TResult>(Expression<Func<TEntity, TResult>> selector)
+        {
+            var sql = "";
+            return Execute((conn, tran) => conn.Query<TResult>(sql).FirstOrDefault());
+        }
+
+        /// <summary>
+        /// 查询单个
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public Task<TEntity> GetAsync(Tkey key)
+        {
+            return ExecuteAsync((conn, tran) => conn.GetAsync<TEntity>(key));
+        }
+
+        /// <summary>
+        /// 查询全部
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<TEntity> GetList()
+        {
+            return Execute((conn, tran) => conn.GetList<TEntity>());
+        }
+
+        /// <summary>
+        /// 查询
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<TEntity> GetList(AbstractQueryModel query)
+        {
+            var where = query.Where();
+            where += $" {query.OrderBy()}";
+            return Execute((conn, tran) => conn.GetList<TEntity>(where,query));
+        }
+
+
+        /// <summary>
+        /// 查询全部
+        /// </summary>
+        /// <returns></returns>
+        public Task<IEnumerable<TEntity>> GetListAsync()
+        {
+            return ExecuteAsync((conn, tran) => conn.GetListAsync<TEntity>());
+        }
+
+        /// <summary>
+        /// 查询
+        /// </summary>
+        /// <returns></returns>
+        public Task<IEnumerable<TEntity>> GetListAsync(AbstractQueryModel query)
+        {
+            var where = query.Where();
+            where += $" {query.OrderBy()}";
+            return ExecuteAsync((conn, tran) => conn.GetListAsync<TEntity>(where,query));
+        }
+
+    }
 }

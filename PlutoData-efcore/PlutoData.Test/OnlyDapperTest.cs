@@ -34,25 +34,12 @@ namespace PlutoData.Test
 
 			var dapperRep = _dapperUnitOfWork.GetRepository<IBlogDapperRepository>();
 
-			new Thread(() =>
-							   {
-								   var entity = dapperRep.GetAll();
-								   var res = dapperRep.Insert(new Blog
-								   {
-									   Url = "dapper_DbTransaction",
-									   Title = "dapper_DbTransaction",
-								   });
-							   }).Start();
-
-			new Thread(() =>
-							   {
-								   var entity = dapperRep.GetAll();
-								   var ddfd = rep.Insert(new Blog
-								   {
-									   Url = "dapper_DbTransaction",
-									   Title = "dapper_DbTransaction",
-								   });
-							   }).Start();
+            var entity = dapperRep.GetAll();
+            var res = dapperRep.Insert(new Blog
+            {
+                Url = "dapper_DbTransaction",
+                Title = "dapper_DbTransaction",
+            });
 		}
 
 
@@ -81,25 +68,25 @@ namespace PlutoData.Test
 			Assert.IsTrue(res);
 
 
-			var res2 = rep.BeginTransaction<bool>(transaction =>
-			{
-				rep2.DbTransaction = transaction;
+			//var res2 = rep.BeginTransaction<bool>(transaction =>
+			//{
+			//	rep2.DbTransaction = transaction;
 
-				var dsdsds = rep.DbConnection.GetHashCode();
+			//	var dsdsds = rep.DbConnection.GetHashCode();
 
-				var dsdsds222 = rep2.DbConnection.GetHashCode();
+			//	var dsdsds222 = rep2.DbConnection.GetHashCode();
 
-				var res = rep.Insert(new Blog
-				{
-					Url = $"{transaction.GetHashCode()}_22222222",
-					Title = $"{rep2.DbTransaction.GetHashCode()}_2222222",
-				});
-				var aaa2 = rep2.DbConnection.Execute($@"INSERT INTO [dbo].[Posts]([Id],[Title], [Content]) VALUES (22223,N'fffff', N'fffffff'); ", transaction: transaction) > 0;
-				return aaa2 & res;
-			});
+			//	var res = rep.Insert(new Blog
+			//	{
+			//		Url = $"{transaction.GetHashCode()}_22222222",
+			//		Title = $"{rep2.DbTransaction.GetHashCode()}_2222222",
+			//	});
+			//	var aaa2 = rep2.DbConnection.Execute($@"INSERT INTO [dbo].[Posts]([Id],[Title], [Content]) VALUES (22223,N'fffff', N'fffffff'); ", transaction: transaction) > 0;
+			//	return aaa2 & res;
+			//});
 
 
-			Assert.IsFalse(res2);
+			//Assert.IsFalse(res2);
 		}
 	}
 }

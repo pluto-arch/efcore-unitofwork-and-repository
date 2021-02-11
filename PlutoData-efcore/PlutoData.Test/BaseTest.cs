@@ -29,7 +29,7 @@ namespace PlutoData.Test
 	[TestFixture]
     public class BaseTest
     {
-		private Flag _flag;
+		private readonly Flag _flag;
         private string connStr = "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;MultipleActiveResultSets = true;";
 
 	    public BaseTest(Flag flag)
@@ -48,7 +48,14 @@ namespace PlutoData.Test
             service.AddControllers();
             if (_flag==Flag.EfCore) // onlyEf
             {
-	            service.AddUnitOfWorkDbContext<BloggingContext>(opt =>
+
+                //service.AddEfUnitOfWork<BloggingContext>(opt =>
+                //{
+                //    opt.UseSqlServer(connStr);
+                //    opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+                //});
+
+	            service.AddEfUnitOfWorkUsingPool<BloggingContext>(opt =>
 	                                                            {
 		                                                            opt.UseSqlServer(connStr);
 		                                                            opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
@@ -62,11 +69,18 @@ namespace PlutoData.Test
 
             if (_flag==Flag.Both) // dapper & efcore
             {
-	            service.AddDapperUnitOfWork<BloggingContext>(opt =>
-	                                                         {
-		                                                         opt.UseSqlServer(connStr);
-		                                                         opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
-	                                                         });
+
+                //service.AddHybridUnitOfWork<BloggingContext>(opt =>
+                //{
+                //    opt.UseSqlServer(connStr);
+                //    opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+                //});
+
+	            service.AddHybridUnitOfWorkUsingPool<BloggingContext>(opt =>
+                {
+                    opt.UseSqlServer(connStr);
+                    opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+                });
             }
             service.AddRepository(Assembly.GetExecutingAssembly());
             _provider = service.BuildServiceProvider();

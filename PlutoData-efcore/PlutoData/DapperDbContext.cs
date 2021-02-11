@@ -3,91 +3,82 @@ using System.Collections.Concurrent;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.DependencyInjection;
+
 using PlutoData.Extensions;
 using PlutoData.Interface;
+
 using ConnectionState = System.Data.ConnectionState;
 
 namespace PlutoData
 {
-	/// <summary>
-	/// dapper 上下文
-	/// </summary>
-	public class DapperDbContext:IDisposable
-	{
-		/// <summary>
-		/// </summary>
-		internal readonly IServiceProvider _service;
+    /// <summary>
+    /// dapper 上下文
+    /// </summary>
+    public class DapperDbContext : IDisposable
+    {
+        internal readonly IServiceProvider _service;
         internal IDbConnection _dbConnection;
         internal string _connectionString;
-		private bool isShareEfDbContext=false;
+        private readonly bool _dependOnEf  = false;
         private bool disposedValue;
         internal readonly DbContext _dbContext;
 
-		/// <summary>
-		/// 纯dapper
-		/// </summary>
-		/// <param name="service"></param>
-		/// <param name="connectionString">链接字符串</param>
-		public DapperDbContext(IServiceProvider service,string connectionString)
-		{
-			_service=service??throw new ArgumentNullException(nameof(service));
-            _connectionString = connectionString??throw new ArgumentNullException(nameof(connectionString));
-			//var dbConnection = SqlClientFactory.Instance.CreateConnection();
-			//if (dbConnection != null)
-			//{
-   //             dbConnection.ConnectionString = connectionString;
-			//}
-   //         _dbConnection = dbConnection;
+        /// <summary>
+        /// 纯dapper
+        /// </summary>
+        /// <param name="service"></param>
+        /// <param name="connectionString">链接字符串</param>
+        public DapperDbContext(IServiceProvider service, string connectionString)
+        {
+            _service = service ?? throw new ArgumentNullException(nameof(service));
+            _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
         }
 
-		/// <summary>
-		/// 和ef共用
-		/// </summary>
-		public DapperDbContext(IServiceProvider service,DbContext efDbContext)
-		{
-			if (efDbContext==null)
-			{
-				throw new ArgumentNullException(nameof(efDbContext));
-			}
-			_service=service;
-			//_dbConnection = efDbContext.Database.GetDbConnection();
-			_dbContext=efDbContext;
-			isShareEfDbContext=true;
-		}
+        /// <summary>
+        /// 和ef共用
+        /// </summary>
+        public DapperDbContext(IServiceProvider service, DbContext efDbContext)
+        {
+            _service = service;
+            _dbContext = efDbContext ?? throw new ArgumentNullException(nameof(efDbContext));
+            _dependOnEf = true;
+        }
 
-
+        /// <summary>
+        /// 获取链接对象
+        /// </summary>
+        /// <returns></returns>
         public IDbConnection GetDbConnection()
         {
-            if (_dbConnection != null)
+            if (_dependOnEf)
             {
-                if (_dbConnection.State!=ConnectionState.Open)
-                {
-                    _dbConnection.ConnectionString = _connectionString;
-                }
-                return _dbConnection;
-            }
-            if (isShareEfDbContext)
-            {
-                if (_dbContext==null)
+                if (_dbContext == null)
                     throw new InvalidOperationException("缺少efcore 配置");
-                _dbConnection=_dbContext.Database.GetDbConnection();
+                return _dbContext.Database.GetDbConnection();
             }
-            else
+
+            if (_dbConnection == null)
             {
                 var dbConnection = SqlClientFactory.Instance.CreateConnection();
                 if (dbConnection != null)
                 {
                     dbConnection.ConnectionString = _connectionString;
                 }
-                _dbConnection= dbConnection;
+                _dbConnection = dbConnection;
+                return _dbConnection;
+                
             }
 
-            if (_dbConnection.State!=ConnectionState.Open)
+            if (_dbConnection.State != ConnectionState.Open)
+            {
+                _dbConnection.ConnectionString = _connectionString;
                 _dbConnection.Open();
+            }
             return _dbConnection;
         }
 
