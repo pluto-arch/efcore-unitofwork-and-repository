@@ -21,16 +21,16 @@ namespace PlutoData.Uows
 	/// <typeparam name="TContext"></typeparam>
 	public class EfUnitOfWork<TContext> : IEfUnitOfWork<TContext> where TContext : DbContext
     {
-        private ConcurrentDictionary<Type, object> repositories;
+        private ConcurrentDictionary<Type, object>? repositories;
         private readonly TContext _context;
         private bool disposed = false;
 
-        private IDbContextTransaction _currentTransaction;
+        private IDbContextTransaction? _currentTransaction;
         /// <summary>
         /// get Current Transaction
         /// </summary>
         /// <returns></returns>
-        public IDbContextTransaction GetCurrentTransaction() => _currentTransaction;
+        public IDbContextTransaction? GetCurrentTransaction() => _currentTransaction;
 
 
         /// <summary>
@@ -53,7 +53,9 @@ namespace PlutoData.Uows
         }
 
         /// <inheritdoc />
-        public TRepository GetDapperRepository<TRepository>() where TRepository : IDapperRepository
+        public TRepository GetDapperRepository<TRepository,TDapperDbContext>() 
+            where TRepository : IDapperRepository
+            where TDapperDbContext : DapperDbContext
         {
 	        if (repositories == null)
 	        {
@@ -64,43 +66,18 @@ namespace PlutoData.Uows
 	        {
 		        return (TRepository)repositories[type];
 	        }
-	        var dapperUow = _context.GetService<IDapperUnitOfWork>();
+	        var dapperUow = _context.GetService<IDapperUnitOfWork<TDapperDbContext>>();
 	        if (dapperUow == null)
 	        {
-		        throw new NullReferenceException($"{typeof(IDapperUnitOfWork)} not register");
+		        throw new NullReferenceException($"{typeof(IDapperUnitOfWork<TDapperDbContext>)} not register");
 	        }
             var repository=dapperUow.GetRepository<TRepository>();
-	        repository.SetDbContext(dapperUow.DapperDbContext);
 	        repositories[type] = repository;
 	        return repository;
         }
 
         /// <inheritdoc />
-        public IDapperRepository<TEntity> GetDapperBaseRepository<TEntity>() where TEntity : class, new()
-        {
-	        if (repositories == null)
-	        {
-		        repositories = new ConcurrentDictionary<Type, object>();
-	        }
-	        var type = typeof(IDapperRepository<TEntity>);
-	        if (repositories.ContainsKey(type))
-	        {
-		        return (IDapperRepository<TEntity>)repositories[type];
-	        }
-	        var dapperUow = _context.GetService<IDapperUnitOfWork>();
-	        if (dapperUow == null)
-	        {
-		        throw new NullReferenceException($"{typeof(IDapperUnitOfWork)} not register");
-	        }
-	        var repository=dapperUow.GetBaseRepository<TEntity>();
-	        repository.SetDbContext(dapperUow.DapperDbContext);
-	        repositories[type] = repository;
-	        return repository;
-        }
-
-
-        /// <inheritdoc />
-        public TRepository GetRepository<TRepository>() where TRepository : IEfRepository
+        public TRepository GetRepository<TRepository>()
         {
             if (repositories == null)
             {
@@ -116,7 +93,6 @@ namespace PlutoData.Uows
             {
                 throw new NullReferenceException($"{typeof(TRepository)} not register");
             }
-            repository.SetDbContext(_context);
             repositories[type] = repository;
             return repository;
         }
@@ -139,7 +115,6 @@ namespace PlutoData.Uows
             {
                 throw new NullReferenceException($"{typeof(IEfRepository<TEntity>)} not register");
             }
-            repository.SetDbContext(_context);
             repositories[type] = repository;
             return repository;
         }
@@ -163,20 +138,18 @@ namespace PlutoData.Uows
         /// <inheritdoc />
         public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IEfUnitOfWork<TContext>[] unitOfWorks)
         {
-            using (var ts = new TransactionScope())
+            using var ts = new TransactionScope();
+            var count = 0;
+            foreach (var unitOfWork in unitOfWorks)
             {
-                var count = 0;
-                foreach (var unitOfWork in unitOfWorks)
-                {
-                    count += await unitOfWork.SaveChangesAsync(cancellationToken);
-                }
-
-                count += await SaveChangesAsync(cancellationToken);
-
-                ts.Complete();
-
-                return count;
+                count += await unitOfWork.SaveChangesAsync(cancellationToken);
             }
+
+            count += await SaveChangesAsync(cancellationToken);
+
+            ts.Complete();
+
+            return count;
         }
 
 
@@ -200,7 +173,7 @@ namespace PlutoData.Uows
         }
 
         /// <inheritdoc />
-        public async Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default)
+        public async Task<IDbContextTransaction?> BeginTransactionAsync(CancellationToken cancellationToken = default)
         {
             if (_currentTransaction != null) return null;
             _currentTransaction = await DbContext.Database.BeginTransactionAsync(cancellationToken);

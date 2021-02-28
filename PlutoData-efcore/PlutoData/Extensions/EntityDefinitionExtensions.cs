@@ -21,7 +21,7 @@ namespace PlutoData.Extensions
 		/// <typeparam name="TAttribute">属性</typeparam>
 		/// <param name="entity"></param>
 		/// <returns></returns>
-		internal static TAttribute GetAttribute<TAttribute>(this Type entity) where TAttribute : Attribute
+		internal static TAttribute? GetAttribute<TAttribute>(this Type entity) where TAttribute : Attribute
 		{
 			var attrs = entity.GetCustomAttributes(typeof(TAttribute));
 			if (attrs?.Count() > 0)
@@ -36,32 +36,36 @@ namespace PlutoData.Extensions
 		/// <typeparam name="TAttribute">属性</typeparam>
 		/// <param name="property"></param>
 		/// <returns></returns>
-		internal static TAttribute GetAttribute<TAttribute>(this PropertyInfo property) where TAttribute : Attribute
+		internal static TAttribute? GetAttribute<TAttribute>(this PropertyInfo property) where TAttribute : Attribute
 		{
 			var obs = property.GetCustomAttributes(typeof(TAttribute), false);
-			if (obs?.Count() > 0)
+			if (obs?.Length > 0)
 				return (TAttribute)obs.First();
 			return null;
 		}
 
-
-		public static PropertyInfo GetIdentityField<TEntity>(this TEntity entity)
+		/// <summary>
+		/// 获取自增字段
+		/// </summary>
+		/// <typeparam name="TEntity"></typeparam>
+		/// <param name="entity"></param>
+		/// <returns></returns>
+		public static PropertyInfo? GetIdentityField<TEntity>(this TEntity entity)
 		{
 			var t = typeof(TEntity);
 			var mTableName = t.GetMainTableName();
 			var propertyInfos = t.GetProperties<DatabaseGeneratedAttribute>();
 			if ((propertyInfos?.Count ?? 0) <= 0) // 代表没有主键
 				return null;
+            foreach (var pi in from pi in propertyInfos
+                               let attribute = pi.GetAttribute<DatabaseGeneratedAttribute>()
+                               where attribute != null && attribute.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity
+                               select pi)
+            {
+                return pi;
+            }
 
-			foreach (var pi in propertyInfos)
-			{
-				var attribute = pi.GetAttribute<DatabaseGeneratedAttribute>();
-				if (attribute != null && attribute.DatabaseGeneratedOption == DatabaseGeneratedOption.Identity)
-				{
-					return pi;
-				}
-			}
-			return null;
+            return null;
 		}
 
 
@@ -92,7 +96,7 @@ namespace PlutoData.Extensions
 			foreach (var item in pis)
 			{
 				var obs = item.GetCustomAttributes(typeof(TAttribute), false);
-				if (obs?.Count() > 0)
+				if (obs?.Length > 0)
 					list.Add(item);
 			}
 			return list;

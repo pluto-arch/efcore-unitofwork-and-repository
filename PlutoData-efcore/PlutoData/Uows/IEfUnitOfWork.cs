@@ -30,40 +30,19 @@ namespace PlutoData.Uows
         /// 获取到的仓储，具有IRepository中的操作，和自定义操作
         /// </remarks> 
         /// <returns></returns>
-        TRepository GetRepository<TRepository>() where TRepository :IEfRepository;
-
-
-        /// <summary>
-        /// 获取基本的仓储
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <remarks>
-        /// 获取到的仓储，仅具有IRepository中的操作
-        /// </remarks>
-        /// <returns></returns>
-        IEfRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new();
+        TRepository GetRepository<TRepository>();
 
 
         /// <summary>
         /// 活动共享ef链接的仓储
         /// </summary>
-        /// <typeparam name="TRepository"></typeparam>
         /// <returns></returns>
         /// <remarks>
         /// 执行操作时，不可使用Using包裹IDbConnection对象
         /// </remarks>
-        TRepository GetDapperRepository<TRepository>() where TRepository : IDapperRepository;
-
-
-        /// <summary>
-        /// 活动共享ef链接的仓储
-        /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <returns></returns>
-        /// <remarks>
-        /// 执行操作时，不可使用Using包裹IDbConnection对象
-        /// </remarks>
-        IDapperRepository<TEntity> GetDapperBaseRepository<TEntity>() where TEntity : class, new();
+        TRepository GetDapperRepository<TRepository, TDapperDbContext>() 
+            where TRepository : IDapperRepository
+            where TDapperDbContext : DapperDbContext;
 
 
         /// <summary>
@@ -102,7 +81,7 @@ namespace PlutoData.Uows
         IQueryable<TEntity> FromSql<TEntity>(string sql, params object[] parameters) where TEntity : class;
 
         /// <summary>
-        /// 使用TrakGrap Api附加断开连接的实体
+        /// 使用TrakGrap 开始追踪
         /// </summary>
         /// <param name="rootEntity"></param>
         /// <param name="callback"></param>
@@ -119,7 +98,7 @@ namespace PlutoData.Uows
         /// 获取当前的事务对象
         /// </summary>
         /// <returns></returns>
-        IDbContextTransaction GetCurrentTransaction();
+        IDbContextTransaction? GetCurrentTransaction();
 
 
         /// <summary>
@@ -136,7 +115,7 @@ namespace PlutoData.Uows
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
 
-        Task<IDbContextTransaction> BeginTransactionAsync(CancellationToken cancellationToken = default);
+        Task<IDbContextTransaction?> BeginTransactionAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Commit Transaction

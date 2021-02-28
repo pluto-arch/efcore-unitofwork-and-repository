@@ -75,20 +75,14 @@ namespace apisample
             services.AddControllers();
 
 
-            services.AddUnitOfWorkDbContext<BloggingContext>(opt =>
+            services.AddHybridUnitOfWork<BloggingContext>(opt =>
             {
                 opt.UseSqlServer(
-                    "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+                    "Server =0.0.0.0,3433;Database = PlutoDataDemo;User ID = pluto_admin;Password = 970307Lbx;Trusted_Connection = False;");
                 opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
             });
 
             services.AddRepository();
-
-            //services.AddScoped<DapperDbContext>(sp=>
-            //                                    {
-            //                                        return new DapperDbContext(sp,"Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-            //                                    });
-
 
 	        //services.AddDapperUnitOfWork<BloggingContext>();
             services.AddSwaggerGen(c =>

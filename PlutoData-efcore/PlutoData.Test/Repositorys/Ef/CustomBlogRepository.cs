@@ -1,4 +1,7 @@
 ﻿using System;
+
+using apisample;
+
 using Microsoft.EntityFrameworkCore;
 using PlutoData;
 using PlutoData.Interface;
@@ -14,9 +17,24 @@ namespace PlutoData.Test.Repositorys.Ef
     }
 
 
-    public class CustomBlogRepository : EfRepository<Blog>, ICustomBlogRepository
+    public class CustomBlogRepository : EfRepository<BloggingContext, Blog>, ICustomBlogRepository
     {
+        public CustomBlogRepository(BloggingContext dbContext) : base(dbContext)
+        {
+        }
     }
+
+
+    public interface IBloggingEfCoreRepository<TEntity> : IEfRepository<TEntity> where TEntity : class { }
+
+    public class BloggingEfCoreRepository<TEntity> : EfRepository<BloggingContext, TEntity> , IBloggingEfCoreRepository<TEntity>
+        where TEntity : class
+    {
+        public BloggingEfCoreRepository(BloggingContext dbContext) : base(dbContext)
+        {
+        }
+    }
+
 
 
 }

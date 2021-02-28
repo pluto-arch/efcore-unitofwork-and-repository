@@ -32,7 +32,12 @@ namespace PlutoData.Collections
 		/// <inheritdoc />
 		public IList<T> Items { get; set; }
 
-
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="pageIndex"></param>
+		/// <param name="pageSize"></param>
 		public PagedList(IEnumerable<T> source, int pageIndex, int pageSize)
 		{
 			if (source == null)
@@ -45,21 +50,46 @@ namespace PlutoData.Collections
 				throw new ArgumentException($"页码不能小于1");
 			}
 
-			if (source is IQueryable<T> querable)
-			{
-				PageIndex = pageIndex;
-				PageSize = pageSize;
-				TotalCount = querable.Count();
-				Items = querable.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
-			}
-			else
-			{
-				PageIndex = pageIndex;
-				PageSize = pageSize;
-				TotalCount = source.Count();
+			PageIndex = pageIndex;
+			PageSize = pageSize;
+			TotalCount = source.Count();
+            if (TotalCount> pageSize)
+            {
 				Items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
 			}
+			Items = source.ToList();
 		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="pageIndex"></param>
+		/// <param name="pageSize"></param>
+		/// <param name="total"></param>
+		public PagedList(IEnumerable<T> source, int pageIndex, int pageSize,int total)
+		{
+			if (source == null)
+			{
+				throw new NullReferenceException($"数据源不能为空");
+			}
+
+			if (pageIndex < 1)
+			{
+				throw new ArgumentException($"页码不能小于1");
+			}
+
+			PageIndex = pageIndex;
+			PageSize = pageSize;
+			TotalCount = total;
+			if (total > pageSize)
+			{
+				Items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToList();
+			}
+			Items = source.ToList();
+		}
+
+
 
 		internal PagedList() => Items = new T[0];
 	}
@@ -98,23 +128,20 @@ namespace PlutoData.Collections
 				throw new ArgumentException($"页码不能小于1");
 			}
 
-			if (source is IQueryable<TSource> querable)
-			{
-				PageIndex = pageIndex;
-				PageSize = pageSize;
-				TotalCount = querable.Count();
-				var items = querable.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToArray();
-				Items = new List<TResult>(converter(items));
-			}
-			else
-			{
-				PageIndex = pageIndex;
-				PageSize = pageSize;
-				TotalCount = source.Count();
+			PageIndex = pageIndex;
+			PageSize = pageSize;
+			TotalCount = source.Count();
+            if (TotalCount> pageSize)
+            {
 				var items = source.Skip((PageIndex - 1) * PageSize).Take(PageSize).ToArray();
 				Items = new List<TResult>(converter(items));
 			}
+            else
+            {
+				Items = new List<TResult>(converter(source));
+			}
 		}
+
 
 
 		public PagedList(

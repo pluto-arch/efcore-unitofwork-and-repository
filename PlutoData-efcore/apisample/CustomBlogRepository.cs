@@ -14,8 +14,11 @@ namespace apisample
     }
 
 
-    public class CustomBlogRepository : EfRepository<Blog>, ICustomBlogRepository
+    public class CustomBlogRepository : EfRepository<BloggingContext, Blog>, ICustomBlogRepository
     {
+        public CustomBlogRepository(BloggingContext dbContext) : base(dbContext)
+        {
+        }
     }
 
 

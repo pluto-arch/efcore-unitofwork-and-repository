@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore.Query;
 
 using PlutoData.Collections;
 using PlutoData.Interface.Base;
+using PlutoData.Specifications;
 
 using System;
 using System.Collections.Generic;
@@ -14,12 +15,11 @@ using System.Threading.Tasks;
 
 namespace PlutoData.Interface
 {
-
 	/// <summary>
 	/// 泛型仓储接口
 	/// </summary>
 	/// <typeparam name="TEntity"></typeparam>
-	public interface IEfRepository<TEntity> : IEfRepository where TEntity : class
+	public interface IEfRepository<TEntity>  where TEntity : class
 	{
 		/// <summary>
 		/// 实体映射的表名
@@ -62,13 +62,13 @@ namespace PlutoData.Interface
 		/// <returns>返回： <see cref="IPagedList{TEntity}"/></returns>
 		/// <remarks>默认不追踪.</remarks>
 		Task<IPagedList<TEntity>> GetPagedListAsync(Expression<Func<TEntity, bool>> predicate = null,
-			Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-			Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
-			int pageIndex = 1,
-			int pageSize = 20,
-			bool disableTracking = false,
-			CancellationToken cancellationToken = default(CancellationToken),
-			bool ignoreQueryFilters = false);
+                                              Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
+                                              Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
+                                              int pageIndex = 1,
+                                              int pageSize = 20,
+                                              bool disableTracking = false,
+                                              bool ignoreQueryFilters = false,
+											  CancellationToken cancellationToken = default);
 
 
 		/// <summary>
@@ -115,8 +115,8 @@ namespace PlutoData.Interface
 															 int pageIndex = 1,
 															 int pageSize = 20,
 															 bool disableTracking = false,
-															 CancellationToken cancellationToken = default(CancellationToken),
-															 bool ignoreQueryFilters = false) where TResult : class;
+															 bool ignoreQueryFilters = false,
+															 CancellationToken cancellationToken = default) where TResult : class;
 
 
 		/// <summary>
@@ -131,9 +131,9 @@ namespace PlutoData.Interface
 		///         <cref>TEntity</cref>
 		///     </see>
 		/// </returns>
-		TEntity GetFirstOrDefault(Expression<Func<TEntity, bool>> predicate = null,
-								  Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-								  Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
+		TEntity? GetFirstOrDefault(Expression<Func<TEntity, bool>>? predicate = null,
+								  Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+								  Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
 								  bool disableTracking = false,
 								  bool ignoreQueryFilters = false);
 
@@ -195,9 +195,9 @@ namespace PlutoData.Interface
 		///         <cref>TEntity</cref>
 		///     </see>
 		/// </returns>
-		Task<TEntity> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>> predicate = null,
-											 Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>> orderBy = null,
-											 Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>> include = null,
+		Task<TEntity?> GetFirstOrDefaultAsync(Expression<Func<TEntity, bool>>? predicate = null,
+											 Func<IQueryable<TEntity>, IOrderedQueryable<TEntity>>? orderBy = null,
+											 Func<IQueryable<TEntity>, IIncludableQueryable<TEntity, object>>? include = null,
 											 bool disableTracking = false,
 											 bool ignoreQueryFilters = false,
 											 CancellationToken cancellationToken = default);
@@ -332,7 +332,7 @@ namespace PlutoData.Interface
 		/// <param name="entity"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		ValueTask<EntityEntry<TEntity>> InsertAsync(TEntity entity, CancellationToken cancellationToken = default(CancellationToken));
+		ValueTask<EntityEntry<TEntity>> InsertAsync(TEntity entity, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// 新增多个
@@ -347,7 +347,7 @@ namespace PlutoData.Interface
 		/// <param name="entities"></param>
 		/// <param name="cancellationToken"></param>
 		/// <returns></returns>
-		Task InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default(CancellationToken));
+		Task InsertAsync(IEnumerable<TEntity> entities, CancellationToken cancellationToken = default);
 
 		/// <summary>
 		/// 更新
@@ -366,12 +366,6 @@ namespace PlutoData.Interface
 		/// </summary>
 		/// <param name="entities"></param>
 		void Update(IEnumerable<TEntity> entities);
-
-		/// <summary>
-		/// 主键删除
-		/// </summary>
-		/// <param name="id"></param>
-		void Delete(object id);
 
 		/// <summary>
 		/// 删除一个实体
@@ -397,5 +391,63 @@ namespace PlutoData.Interface
 		/// <param name="entity"></param>
 		/// <param name="state"></param>
 		void ChangeEntityState(TEntity entity, EntityState state);
+
+
+		#region Specification
+		/// <summary>
+		/// 获取列表
+		/// </summary>
+		/// <param name="specification"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<List<TEntity>> GetListAsync(ISpecification<TEntity> specification, CancellationToken cancellationToken = default);
+		/// <summary>
+		/// 获取列表
+		/// </summary>
+		/// <param name="specification"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<List<TResult>> GetListAsync<TResult>(ISpecification<TEntity, TResult> specification, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// 分页
+		/// </summary>
+		/// <param name="specification"></param>
+		/// <param name="pageNo"></param>
+		/// <param name="pageSize"></param>
+		/// <returns></returns>
+		IPagedList<TEntity> GetPageList(ISpecification<TEntity> specification, int pageNo, int pageSize);
+
+		/// <summary>
+		/// 分页
+		/// </summary>
+		/// <param name="specification"></param>
+		/// <param name="pageNo"></param>
+		/// <param name="pageSize"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<IPagedList<TEntity>> GetPageListAsync(ISpecification<TEntity> specification, int pageNo, int pageSize, CancellationToken cancellationToken = default);
+
+		/// <summary>
+		/// 分页
+		/// </summary>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="specification"></param>
+		/// <param name="pageNo"></param>
+		/// <param name="pageSize"></param>
+		/// <returns></returns>
+		IPagedList<TResult> GetPageList<TResult>(ISpecification<TEntity, TResult> specification, int pageNo, int pageSize);
+
+		/// <summary>
+		/// 分页
+		/// </summary>
+		/// <typeparam name="TResult"></typeparam>
+		/// <param name="specification"></param>
+		/// <param name="pageNo"></param>
+		/// <param name="pageSize"></param>
+		/// <param name="cancellationToken"></param>
+		/// <returns></returns>
+		Task<IPagedList<TResult>> GetPageListAsync<TResult>(ISpecification<TEntity, TResult> specification, int pageNo, int pageSize, CancellationToken cancellationToken = default);
+		#endregion
 	}
 }

@@ -22,21 +22,24 @@ namespace PlutoData
     public class DapperDbContext : IDisposable
     {
         internal readonly IServiceProvider _service;
-        internal IDbConnection _dbConnection;
+        internal IDbConnection? _dbConnection;
         internal string _connectionString;
-        private readonly bool _dependOnEf  = false;
+        private readonly bool _dependOnEf = false;
         private bool disposedValue;
-        internal readonly DbContext _dbContext;
+        internal readonly DbContext? _dbContext;
+        private readonly Func<IDbConnection> _dbConnCreateFunc;
 
         /// <summary>
-        /// 纯dapper
+        /// dapper
         /// </summary>
         /// <param name="service"></param>
-        /// <param name="connectionString">链接字符串</param>
-        public DapperDbContext(IServiceProvider service, string connectionString)
+        /// <param name="connectionString"></param>
+        /// <param name="dbConnCreateFunc"></param>
+        public DapperDbContext(IServiceProvider service, string connectionString, Func<IDbConnection> dbConnCreateFunc)
         {
             _service = service ?? throw new ArgumentNullException(nameof(service));
             _connectionString = connectionString ?? throw new ArgumentNullException(nameof(connectionString));
+            _dbConnCreateFunc = dbConnCreateFunc;
         }
 
         /// <summary>
@@ -45,9 +48,12 @@ namespace PlutoData
         public DapperDbContext(IServiceProvider service, DbContext efDbContext)
         {
             _service = service;
-            _dbContext = efDbContext ?? throw new ArgumentNullException(nameof(efDbContext));
+            _dbContext = efDbContext;
             _dependOnEf = true;
+            _connectionString = string.Empty;
+            _dbConnCreateFunc = null!;
         }
+
 
         /// <summary>
         /// 获取链接对象
@@ -58,23 +64,20 @@ namespace PlutoData
             if (_dependOnEf)
             {
                 if (_dbContext == null)
-                    throw new InvalidOperationException("缺少efcore 配置");
+                    throw new InvalidOperationException("EF DbContext is Missing!");
                 return _dbContext.Database.GetDbConnection();
             }
 
             if (_dbConnection == null)
             {
-                var dbConnection = SqlClientFactory.Instance.CreateConnection();
-                if (dbConnection != null)
-                {
-                    dbConnection.ConnectionString = _connectionString;
-                }
+                var dbConnection = _dbConnCreateFunc();
+                dbConnection.ConnectionString = _connectionString;
                 _dbConnection = dbConnection;
                 return _dbConnection;
-                
+
             }
 
-            if (_dbConnection.State != ConnectionState.Open)
+            if (_dbConnection.State != ConnectionState.Open && string.IsNullOrEmpty(_dbConnection.ConnectionString))
             {
                 _dbConnection.ConnectionString = _connectionString;
                 _dbConnection.Open();
@@ -82,6 +85,10 @@ namespace PlutoData
             return _dbConnection;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="disposing"></param>
         protected virtual void Dispose(bool disposing)
         {
             if (!disposedValue)
@@ -105,7 +112,9 @@ namespace PlutoData
         //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
         //     Dispose(disposing: false);
         // }
-
+        /// <summary>
+        /// 
+        /// </summary>
         public void Dispose()
         {
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中

@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using PlutoData.Attrs;
 
 
 namespace apisample
@@ -35,7 +34,8 @@ namespace apisample
         public string Url { get; set; }
         public string Title { get; set; }
 
-        [DapperIgnore]
+        public int Sort { get; set; }
+
         public List<Post> Posts { get; set; }
     }
 

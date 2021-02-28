@@ -11,8 +11,12 @@ namespace apisample.Dapper
 {
 	public class BlogDapperRepository:DapperRepository<Blog>,IBlogDapperRepository
 	{
-		/// <inheritdoc />
-		public IEnumerable<Blog> GetAll()
+        public BlogDapperRepository(DapperDbContext dapperDb) : base(dapperDb)
+        {
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<Blog> GetAll()
 		{
 			//return DbConnection.Query<Blog>($"SELECT * FROM {EntityMapName}");
 			return Execute(async (conn,tran)=>

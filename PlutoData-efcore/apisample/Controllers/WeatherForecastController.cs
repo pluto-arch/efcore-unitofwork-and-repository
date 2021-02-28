@@ -86,9 +86,8 @@ namespace apisample.Controllers
         [HttpGet("download2")]
 		public async Task<IActionResult> Download2()
 		{
-			//byte[] array = Encoding.UTF8.GetBytes(ToCSV(dt));
-			int bufferSize = 1024;
-			Response.ContentType = "application/octet-stream";
+            //byte[] array = Encoding.UTF8.GetBytes(ToCSV(dt));
+            Response.ContentType = "application/octet-stream";
 			var contentDisposition = "attachment;" + "filename=" + HttpUtility.UrlEncode("fileName.csv");//在Response的Header中设置下载文件的文件名，这样客户端浏览器才能正确显示下载的文件名，注意这里要用HttpUtility.UrlEncode编码文件名，否则有些浏览器可能会显示乱码文件名
 			Response.Headers.Add("Content-Disposition", new string[] { contentDisposition });
 			var header=string.Join(",",new string[]{"111","222","333"})+"\n";

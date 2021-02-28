@@ -4,22 +4,17 @@ using System;
 
 namespace PlutoData
 {
-	public interface IDapperUnitOfWork: IDisposable
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TDapperDbContext"></typeparam>
+	public interface IDapperUnitOfWork<TDapperDbContext> : IDisposable 
+		where TDapperDbContext: DapperDbContext
 	{
 		/// <summary>
 		/// 
 		/// </summary>
-		DapperDbContext DapperDbContext {get;}
-
-		/// <summary>
-		/// 获取基本的仓储
-		/// </summary>
-		/// <typeparam name="TEntity"></typeparam>
-		/// <remarks>
-		/// 获取到的仓储，仅具有IDapperRepository中的操作
-		/// </remarks>
-		/// <returns></returns>
-		IDapperRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new();
+		TDapperDbContext DapperDbContext {get;}
 
 
 		/// <summary>

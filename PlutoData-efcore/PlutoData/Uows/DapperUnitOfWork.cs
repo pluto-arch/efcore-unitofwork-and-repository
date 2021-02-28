@@ -12,45 +12,24 @@ namespace PlutoData.Uows
 	/// <summary>
 	/// dapper 单元
 	/// </summary>
-	public class DapperUnitOfWork:IDapperUnitOfWork
+	public class DapperUnitOfWork<TDapperDbContext> : IDapperUnitOfWork<TDapperDbContext>
+		where TDapperDbContext : DapperDbContext
 	{
-		private ConcurrentDictionary<Type, object> repositories;
-		private readonly DapperDbContext _context;
-		private bool disposed = false;
+		private ConcurrentDictionary<Type, object>? repositories;
+        private bool disposedValue;
+        private readonly TDapperDbContext _context;
 
-		/// <summary>
-		/// 初始化
-		/// </summary>
-		/// <param name="context"></param>
-		public DapperUnitOfWork(DapperDbContext context)
+        /// <summary>
+        /// 初始化
+        /// </summary>
+        /// <param name="context"></param>
+        public DapperUnitOfWork(TDapperDbContext context)
 		{
 			_context = context ?? throw new ArgumentNullException(nameof(context));
 		}
 
 		/// <inheritdoc />
-		public DapperDbContext DapperDbContext =>_context;
-
-		/// <inheritdoc />
-		public IDapperRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new()
-		{
-			if (repositories==null)
-			{
-				repositories=new ConcurrentDictionary<Type, object>();
-			}
-			var type = typeof(IDapperRepository<TEntity>);
-			if (repositories.ContainsKey(type))
-			{
-				return (IDapperRepository<TEntity>)repositories[type];
-			}
-			var repository = _context._service.GetService<IDapperRepository<TEntity>>();
-			if (repository == null)
-			{
-				throw new NullReferenceException($"{typeof(IDapperRepository<TEntity>)} not register");
-			}
-			repository.SetDbContext(_context);
-			repositories[type] = repository;
-			return repository;
-		}
+		public TDapperDbContext DapperDbContext =>_context;
 
 		/// <inheritdoc />
 		public TRepository GetRepository<TRepository>() where TRepository : IDapperRepository
@@ -64,34 +43,53 @@ namespace PlutoData.Uows
 			{
 				return (TRepository)repositories[type];
 			}
+            if (_context==null)
+            {
+				throw new NullReferenceException($"DapperDbContext not register");
+			}
 			var repository = _context._service.GetService<TRepository>();
 			if (repository == null)
 			{
 				throw new NullReferenceException($"{typeof(TRepository)} not register");
 			}
-			repository.SetDbContext(_context);
 			repositories[type] = repository;
 			return repository;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="disposing"></param>
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                    // TODO: 释放托管状态(托管对象)
+                }
+
+                // TODO: 释放未托管的资源(未托管的对象)并替代终结器
+                // TODO: 将大型字段设置为 null
+                disposedValue = true;
+            }
+        }
+
+        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
+        // ~DapperUnitOfWork()
+        // {
+        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+        //     Dispose(disposing: false);
+        // }
 
 		/// <summary>
-		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+		/// 
 		/// </summary>
-		public void Dispose()
-		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
-		}
-
-		/// <summary>
-		/// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
-		/// </summary>
-		/// <param name="disposing">The disposing.</param>
-		protected virtual void Dispose(bool disposing)
-		{
-			disposed = true;
-		}
-
-	}
+        public void Dispose()
+        {
+            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
+        }
+    }
 }

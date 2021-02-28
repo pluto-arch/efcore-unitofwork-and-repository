@@ -10,26 +10,30 @@ namespace PlutoData.Test.Repositorys.Dapper
 {
 	public class BlogDapperRepository:DapperRepository<Blog>,IBlogDapperRepository
 	{
-		/// <inheritdoc />
-		public IEnumerable<Blog> GetAll()
+        public BlogDapperRepository(DapperDbContext dapperDb) : base(dapperDb)
+        {
+        }
+
+        /// <inheritdoc />
+        public IEnumerable<Blog> GetAll()
 		{
 			//return DbConnection.Query<Blog>($"SELECT * FROM {EntityMapName}");
-			return Execute(async (conn,tran)=>
+			return Execute((conn,tran)=>
 			        {
-						return await conn.QueryAsync<Blog>($"SELECT * FROM {EntityMapName}",tran);
-			        }).Result;
+						return conn.Query<Blog>($"SELECT * FROM {EntityMapName}",transaction: tran);
+			        });
 
 		}
 
 		/// <inheritdoc />
 		public bool Insert(object entity)
 		{
-			return Execute(async (conn,tran)=>
+			return Execute((conn,tran)=>
 			               {
 							   var sql=$@"INSERT INTO {EntityMapName}({nameof(Blog.Url)},{nameof(Blog.Title)}) 
 										  VALUES (@{nameof(Blog.Url)},@{nameof(Blog.Title)})";
-							   return (await conn.ExecuteAsync(sql,entity,tran))>0;
-			               }).Result;
+							   return (conn.Execute(sql,entity,tran))>0;
+			               });
 		}
 	}
 }

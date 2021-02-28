@@ -13,6 +13,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using apisample.Dapper;
+using PlutoData;
 
 namespace apisample.Controllers
 {
@@ -140,7 +141,6 @@ namespace apisample.Controllers
                 var strategy = _unitOfWork.CreateExecutionStrategy();
                 await strategy.ExecuteAsync(async () =>
                 {
-                    Guid transactionId;
                     using (var transaction = await _unitOfWork.BeginTransactionAsync())
                     {
                         var blog2 = new Blog
@@ -188,7 +188,7 @@ namespace apisample.Controllers
 			                     Title = $"{r.Next(1,99999)}_efefefef",
 		                     });
 	        }
-	        var efRep = _unitOfWork.GetBaseRepository<Blog>();
+	        var efRep = _unitOfWork.GetRepository<ICustomBlogRepository>();
 	        efRep.Insert(entities);
 	        _unitOfWork.SaveChanges();
         }
@@ -196,8 +196,8 @@ namespace apisample.Controllers
 
         private void EfInsert()
         {
-	        var efRep = _unitOfWork.GetBaseRepository<Blog>();
-	        efRep.Insert(new Blog
+	        var efRep = _unitOfWork.GetRepository<ICustomBlogRepository>();
+            efRep.Insert(new Blog
 	                     {
 		                     Url = $"{r.Next(1,99999)}_efefefef",
 		                     Title = $"{r.Next(1,99999)}_efefefef",
@@ -206,15 +206,15 @@ namespace apisample.Controllers
         }
         private void EfUpdate()
         {
-	        var efRep = _unitOfWork.GetBaseRepository<Blog>();
-	        var blog=efRep.GetFirstOrDefault(predicate:x=>x.Id>0);
+	        var efRep = _unitOfWork.GetRepository<ICustomBlogRepository>();
+            var blog=efRep.GetFirstOrDefault(predicate:x=>x.Id>0);
 	        blog.Title=$"ef_update_{r.Next(1,888888)}";
 	        _unitOfWork.SaveChanges();
         }
 
         private void DapperInsert()
         {
-	        var dapperRep = _unitOfWork.GetDapperRepository<IBlogDapperRepository>();
+	        var dapperRep = _unitOfWork.GetDapperRepository<IBlogDapperRepository,DapperDbContext>();
 	        dapperRep.Insert(new
 	                         {
 		                         Url = $"{r.Next(1,99999)}_dapper",
