@@ -71,9 +71,9 @@ namespace PlutoData.Collections
                 throw new ArgumentException($"页码不能小于1");
             }
 
-            var count = await source.CountAsync(cancellationToken).ConfigureAwait(false);
+            var count = await source.CountAsync(cancellationToken);
             var items = await source.Skip((pageIndex - 1) * pageSize)
-                .Take(pageSize).ToListAsync(cancellationToken).ConfigureAwait(false);
+                .Take(pageSize).ToListAsync(cancellationToken);
 
             var pagedList = new PagedList<T>()
             {
