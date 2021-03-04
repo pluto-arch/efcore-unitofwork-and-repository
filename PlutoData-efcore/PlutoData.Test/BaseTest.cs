@@ -58,7 +58,7 @@ namespace PlutoData.Test
                     opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
                 });
 
-                service.AddEfUnitOfWorkUsingPool<BloggingContext>(opt =>
+                service.AddEfUnitOfWork<BloggingContext>(opt =>
 	                                                            {
 		                                                            opt.UseSqlServer(connStr);
 		                                                            opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
@@ -80,7 +80,7 @@ namespace PlutoData.Test
                 //    opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
                 //});
 
-                service.AddHybridUnitOfWorkUsingPool<BloggingContext>(opt =>
+                service.AddHybridUnitOfWork<BloggingContext>(opt =>
                 {
                     opt.UseSqlServer(connStr);
                     opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
