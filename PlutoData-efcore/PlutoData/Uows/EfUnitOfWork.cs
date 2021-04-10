@@ -1,30 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Transactions;
 
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Storage;
-using PlutoData.Extensions;
-using PlutoData.Interface;
-
-
-namespace PlutoData
+namespace PlutoData.Uows
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TContext"></typeparam>
-    public class UnitOfWork<TContext> : IUnitOfWork<TContext> where TContext : DbContext
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TContext"></typeparam>
+	public class EfUnitOfWork<TContext> : IEfUnitOfWork<TContext> where TContext : DbContext
     {
-        private Dictionary<Type, object> repositories;
         private readonly TContext _context;
         private bool disposed = false;
 
@@ -37,10 +28,10 @@ namespace PlutoData
 
 
         /// <summary>
-        /// 初始化的新实例 <see cref="UnitOfWork{TContext}"/> class.
+        /// 初始化的新实例 <see cref="EfUnitOfWork{TContext}"/> class.
         /// </summary>
         /// <param name="context">The context.</param>
-        public UnitOfWork(TContext context)
+        public EfUnitOfWork(TContext context)
         {
             _context = context ?? throw new ArgumentNullException(nameof(context));
         }
@@ -55,57 +46,42 @@ namespace PlutoData
             get { return _currentTransaction != null; }
         }
 
-
+        /// <inheritdoc />
+        public TRepository GetDapperRepository<TRepository,TDapperDbContext>() 
+            where TRepository : IDapperRepository
+            where TDapperDbContext : DapperDbContext
+        {
+	        var dapperUow = _context.GetService<IDapperUnitOfWork<TDapperDbContext>>();
+	        if (dapperUow == null)
+	        {
+		        throw new NullReferenceException($"{typeof(IDapperUnitOfWork<TDapperDbContext>)} not register");
+	        }
+            var repository=dapperUow.GetRepository<TRepository>();
+	        return repository;
+        }
 
         /// <inheritdoc />
-        public TRepository GetRepository<TRepository>() where TRepository : IRepository
+        public TRepository GetRepository<TRepository>()
         {
-            if (repositories == null)
-            {
-                repositories = new Dictionary<Type, object>();
-            }
-            var type = typeof(TRepository);
-            if (repositories.ContainsKey(type))
-            {
-                return (TRepository)repositories[type];
-            }
             var repository = _context.GetService<TRepository>();
             if (repository == null)
             {
                 throw new NullReferenceException($"{typeof(TRepository)} not register");
             }
-            repository.SetDbContext(_context);
-            repositories[type] = repository;
             return repository;
         }
 
 
         /// <inheritdoc />
-        public IRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new()
+        public IEfRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class,new()
         {
-            if (repositories == null)
-            {
-                repositories = new Dictionary<Type, object>();
-            }
-            var type = typeof(IRepository<TEntity>);
-            if (repositories.ContainsKey(type))
-            {
-                return (IRepository<TEntity>)repositories[type];
-            }
-            var repository = _context.GetService<IRepository<TEntity>>();
+            var repository = _context.GetService<IEfRepository<TEntity>>();
             if (repository == null)
             {
-                throw new NullReferenceException($"{typeof(IRepository<TEntity>)} not register");
+                throw new NullReferenceException($"{typeof(IEfRepository<TEntity>)} not register");
             }
-            repository.SetDbContext(_context);
-            repositories[type] = repository;
             return repository;
         }
-
-
-
-
-
 
         /// <inheritdoc />
         public IExecutionStrategy CreateExecutionStrategy()
@@ -124,22 +100,20 @@ namespace PlutoData
 
 
         /// <inheritdoc />
-        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks)
+        public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IEfUnitOfWork<TContext>[] unitOfWorks)
         {
-            using (var ts = new TransactionScope())
+            using var ts = new TransactionScope();
+            var count = 0;
+            foreach (var unitOfWork in unitOfWorks)
             {
-                var count = 0;
-                foreach (var unitOfWork in unitOfWorks)
-                {
-                    count += await unitOfWork.SaveChangesAsync(cancellationToken);
-                }
-
-                count += await SaveChangesAsync(cancellationToken);
-
-                ts.Complete();
-
-                return count;
+                count += await unitOfWork.SaveChangesAsync(cancellationToken);
             }
+
+            count += await SaveChangesAsync(cancellationToken);
+
+            ts.Complete();
+
+            return count;
         }
 
 
@@ -216,7 +190,7 @@ namespace PlutoData
         }
 
 
-
+        #region dispose
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
@@ -238,12 +212,14 @@ namespace PlutoData
                 if (disposing)
                 {
                     // dispose the db context.
-                    _context.Dispose();
+                    _context?.Dispose();
                 }
             }
 
             disposed = true;
         }
+        #endregion
+
 
     }
 }

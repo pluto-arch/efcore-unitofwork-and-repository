@@ -2,7 +2,7 @@
 
 namespace apisample.Migrations
 {
-    public partial class init_1 : Migration
+    public partial class init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {

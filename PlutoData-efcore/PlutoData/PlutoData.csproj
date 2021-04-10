@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
-    <Version>1.3.5</Version>
+    <TargetFramework>net5.0</TargetFramework>
+	<Nullable>disable</Nullable>
+    <Version>1.4.0</Version>
     <Product>PlutoData</Product>
     <Description>efcore unitof work and repository</Description>
     <PackageId>PlutoData</PackageId>
@@ -27,8 +28,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.1.3" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.1.3" />
+    <Compile Remove="Specifications\Exceptions\**" />
+    <EmbeddedResource Remove="Specifications\Exceptions\**" />
+    <None Remove="Specifications\Exceptions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Dapper" Version="2.0.78" />
+    <PackageReference Include="Dapper.SimpleCRUD" Version="2.3.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="5.0.3" />
   </ItemGroup>
 
 </Project>

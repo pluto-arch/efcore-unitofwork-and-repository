@@ -1,18 +1,18 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Storage;
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.EntityFrameworkCore.Storage;
 
-namespace PlutoData.Interface
+namespace PlutoData.Uows
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    /// <typeparam name="TContext"></typeparam>
-    public interface IUnitOfWork<TContext> : IDisposable where TContext : DbContext
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <typeparam name="TContext"></typeparam>
+	public interface IEfUnitOfWork<TContext> : IDisposable where TContext : DbContext
     {
         /// <summary>
         /// 是否有活动的事务对象
@@ -28,18 +28,19 @@ namespace PlutoData.Interface
         /// 获取到的仓储，具有IRepository中的操作，和自定义操作
         /// </remarks> 
         /// <returns></returns>
-        TRepository GetRepository<TRepository>() where TRepository :IRepository;
+        TRepository GetRepository<TRepository>();
 
 
         /// <summary>
-        /// 获取基本的仓储
+        /// 活动共享ef链接的仓储
         /// </summary>
-        /// <typeparam name="TEntity"></typeparam>
-        /// <remarks>
-        /// 获取到的仓储，仅具有IRepository中的操作
-        /// </remarks>
         /// <returns></returns>
-        IRepository<TEntity> GetBaseRepository<TEntity>() where TEntity : class, new();
+        /// <remarks>
+        /// 执行操作时，不可使用Using包裹IDbConnection对象
+        /// </remarks>
+        TRepository GetDapperRepository<TRepository, TDapperDbContext>() 
+            where TRepository : IDapperRepository
+            where TDapperDbContext : DapperDbContext;
 
 
         /// <summary>
@@ -78,7 +79,7 @@ namespace PlutoData.Interface
         IQueryable<TEntity> FromSql<TEntity>(string sql, params object[] parameters) where TEntity : class;
 
         /// <summary>
-        /// 使用TrakGrap Api附加断开连接的实体
+        /// 使用TrakGrap 开始追踪
         /// </summary>
         /// <param name="rootEntity"></param>
         /// <param name="callback"></param>
@@ -104,7 +105,7 @@ namespace PlutoData.Interface
         /// <param name="cancellationToken"></param>
         /// <param name="unitOfWorks"></param>
         /// <returns></returns>
-        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IUnitOfWork<TContext>[] unitOfWorks);
+        Task<int> SaveChangesAsync(CancellationToken cancellationToken = default, params IEfUnitOfWork<TContext>[] unitOfWorks);
 
         /// <summary>
         /// Begin Transaction 
@@ -121,5 +122,10 @@ namespace PlutoData.Interface
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         Task CommitTransactionAsync(IDbContextTransaction transaction, CancellationToken cancellationToken = default);
+
+        /// <summary>
+        /// 回滚
+        /// </summary>
+        void RollbackTransaction();
     }
 }

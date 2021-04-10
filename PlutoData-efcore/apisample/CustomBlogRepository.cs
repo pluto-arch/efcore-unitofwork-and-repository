@@ -8,14 +8,17 @@ namespace apisample
 {
 
 
-    public interface ICustomBlogRepository : IRepository<Blog>
+    public interface ICustomBlogRepository : IEfRepository<Blog>
     {
 
     }
 
 
-    public class CustomBlogRepository : Repository<Blog>, ICustomBlogRepository
+    public class CustomBlogRepository : EfRepository<BloggingContext, Blog>, ICustomBlogRepository
     {
+        public CustomBlogRepository(BloggingContext dbContext) : base(dbContext)
+        {
+        }
     }
 
 

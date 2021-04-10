@@ -10,8 +10,8 @@ using apisample;
 namespace apisample.Migrations
 {
     [DbContext(typeof(BloggingContext))]
-    [Migration("20200717033310_init_1")]
-    partial class init_1
+    [Migration("20201124092435_init")]
+    partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {

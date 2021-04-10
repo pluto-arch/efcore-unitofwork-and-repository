@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-
-using PlutoData.Interface;
+using PlutoData.Enums;
+using PlutoData.Uows;
 
 
 namespace PlutoData
@@ -17,62 +15,90 @@ namespace PlutoData
     /// </summary>
     public static class UnitOfWorkServiceCollectionExtensions
     {
-        /// <summary>
-        /// 添加unitofwork和dbcontext
-        /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="services"></param>
-        /// <param name="optionBuilder"></param>
-        /// <param name="liftLifetime"></param>
-        /// <returns></returns>
-        public static IServiceCollection AddUnitOfWorkDbContext<TContext>(
-            this IServiceCollection services, 
-            Action<DbContextOptionsBuilder> optionBuilder,
-            ServiceLifetime liftLifetime=ServiceLifetime.Scoped)
-            where TContext : DbContext
-        {
-            services
-                .AddDbContext<TContext>(optionBuilder,liftLifetime)
-                .AddUnitOfWork<TContext>();
-            return services;
-        }
 
         /// <summary>
-        /// 添加单个unitofwork
-        /// 需要单独添加dbcontext
-        /// <see>
-        ///     <cref>services.AddDbContext</cref>
-        /// </see>
+        /// 添加dapper dbcontext
         /// </summary>
-        /// <typeparam name="TContext"></typeparam>
-        /// <param name="services"></param>
+        /// <typeparam name="TDapperDbContext"></typeparam>
+        /// <param name="service"></param>
+        /// <param name="option"></param>
         /// <returns></returns>
-        public static IServiceCollection AddUnitOfWork<TContext>(this IServiceCollection services)
-            where TContext : DbContext
+        public static IServiceCollection AddDapperDbContext<TDapperDbContext>(this IServiceCollection service,Action<DapperDbContextOption> option)
+            where TDapperDbContext : DapperDbContext
         {
-            services.AddScoped<IUnitOfWork<TContext>, UnitOfWork<TContext>>();
-            services.TryAddScoped(typeof(IRepository<>), typeof(Repository<>));
-            return services;
+            service.TryAdd(new ServiceDescriptor(typeof(DapperDbContextOption<TDapperDbContext>),p => CreateDbContextOptions<TDapperDbContext>(p, option),ServiceLifetime.Scoped));
+            service.AddScoped<TDapperDbContext>();
+            return service;
         }
+
+
+        /// <summary>
+        /// 添加dapper 上下文和单元
+        /// </summary>
+        /// <returns></returns>
+        public static IServiceCollection AddDapperUnitOfWork<TDapperDbContext>(this IServiceCollection service)
+            where TDapperDbContext : DapperDbContext
+        {
+            service.AddScoped<IDapperUnitOfWork<TDapperDbContext>, DapperUnitOfWork<TDapperDbContext>>();
+            return service;
+        }
+
 
         /// <summary>
         /// 添加仓储
         /// </summary>
-        /// <param name="services"></param>
-        /// <param name="assembly">入口程序集</param>
-        public static void AddRepository(this IServiceCollection services, Assembly assembly = null)
+        public static void AddRepository(this IServiceCollection services, Assembly assembly = null,bool repositoryScoped=false)
         {
-            assembly = assembly ?? Assembly.GetEntryAssembly();
-            var implTypes = assembly.GetTypes().Where(c => !c.IsInterface && c.Name.EndsWith("Repository")).ToList();
+            assembly ??= Assembly.GetEntryAssembly();
+            var implTypes = assembly?.GetTypes().Where(c => !c.IsInterface && c.Name.EndsWith("Repository")).ToList();
+            if (implTypes == null)
+            {
+                return;
+            }
+
             foreach (var impltype in implTypes)
             {
-                var interfaces = impltype.GetInterfaces().Where(c => c.Name.StartsWith("I") && c.Name.EndsWith("Repository"));
-                if (interfaces.Count() <= 0)
+                var interfaces = impltype.GetInterfaces()
+                                         .Where(c => c.Name.StartsWith("I") && c.Name.EndsWith("Repository"));
+                if (!interfaces.Any())
                     continue;
                 foreach (var inter in interfaces)
-                    services.AddScoped(inter, impltype);
+                {
+                    if (repositoryScoped)
+                    {
+                        services.AddScoped(inter, impltype);
+                    }
+                    else
+                    {
+                        services.AddTransient(inter, impltype);
+                    }
+                }
             }
         }
 
+        #region private
+
+        /// <summary>
+        /// 添加unitofwork
+        /// </summary>
+        /// <typeparam name="TContext"></typeparam>
+        /// <param name="services"></param>
+        /// <returns></returns>
+        public static IServiceCollection AddEfUnitOfWork<TContext>(this IServiceCollection services)
+            where TContext : DbContext
+        {
+            services.AddScoped<IEfUnitOfWork<TContext>, EfUnitOfWork<TContext>>();
+            return services;
+        }
+
+
+        private static object CreateDbContextOptions<TDapperDbContext>(IServiceProvider serviceProvider, Action<DapperDbContextOption> option) 
+            where TDapperDbContext : DapperDbContext
+        {
+            var opt = new DapperDbContextOption<TDapperDbContext>();
+            option.Invoke(opt);
+            return opt;
+        }
+        #endregion
     }
 }

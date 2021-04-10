@@ -1,6 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+using PlutoData.Models;
 
 
 namespace apisample
@@ -25,16 +27,19 @@ namespace apisample
 
     #region entitys
 
-    public class Blog
+    [Table("Blogs")]
+    public class Blog:BaseEntity<int>
     {
-        public int Id { get; set; }
         public string Url { get; set; }
         public string Title { get; set; }
+
+        public int Sort { get; set; }
 
         public List<Post> Posts { get; set; }
     }
 
-    public class Post
+    [Table("Posts")]
+    public class Post:BaseEntity<int>
     {
         public int Id { get; set; }
         public string Title { get; set; }
@@ -43,7 +48,7 @@ namespace apisample
         public List<Comment> Comments { get; set; }
     }
 
-    public class Comment
+    public class Comment:BaseEntity<int>
     {
         public int Id { get; set; }
         public string Title { get; set; }

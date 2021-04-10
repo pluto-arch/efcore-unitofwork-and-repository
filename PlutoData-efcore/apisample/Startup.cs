@@ -1,21 +1,13 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Console;
-using Microsoft.Extensions.Options;
 using Microsoft.OpenApi.Models;
 using PlutoData;
-using PlutoData.Interface;
 
 namespace apisample
 {
@@ -75,20 +67,16 @@ namespace apisample
             services.AddControllers();
 
 
-            services.AddUnitOfWorkDbContext<BloggingContext>(opt =>
-            {
-                opt.UseSqlServer(
-                    "Server =.;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
-                opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
-            });
+            //services.AddHybridUnitOfWork<BloggingContext>(opt =>
+            //{
+            //    opt.UseSqlServer(
+            //        "Server =127.0.0.1,1433;Database = PlutoDataDemo;User ID = sa;Password = 123456;Trusted_Connection = False;");
+            //    opt.UseLoggerFactory(new LoggerFactory(new[] { new EFLoggerProvider() }));
+            //});
 
             services.AddRepository();
 
-
-
-
-                //.AddCustomRepository<Blog, CustomBlogRepository>();
-
+	        //services.AddDapperUnitOfWork<BloggingContext>();
             services.AddSwaggerGen(c =>
             {
                 c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
