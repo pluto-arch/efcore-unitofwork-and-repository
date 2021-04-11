@@ -1,4 +1,6 @@
-# pluto-efcore-general-repository
+# efcore+dapper
+
+> nuget : Install-Package PlutoData -Version 1.7.0-alpha
 
 ## uow
 ### 使用纯efcore模式
