@@ -4,6 +4,8 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 
 namespace PlutoData
@@ -80,6 +82,7 @@ namespace PlutoData
             return Query.GetEnumerator();
         }
 
+        public DbContext Uow => _dbContext;
     }
 
 

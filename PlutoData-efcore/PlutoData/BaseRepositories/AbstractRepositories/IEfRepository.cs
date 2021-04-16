@@ -7,6 +7,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace PlutoData
 {
@@ -15,7 +16,7 @@ namespace PlutoData
     /// </summary>
     public interface IEfRepository
     {
-
+        DbContext Uow { get; }
     }
 
     /// <summary>
