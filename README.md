@@ -18,11 +18,10 @@ service.AddDbContext<EFDbContext>(opt =>
 ## 仓储
 1. ef 仓储 
 ```csharp
-//1. 基础仓储：
 // 定义接口
-public interface IBloggingEfCoreRepository<TEntity> : IEfRepository<TEntity> where TEntity :  BaseEntity { }
+public interface IBloggingEfCoreRepository<TEntity> : IRepository<TEntity> where TEntity :  BaseEntity { }
 // 实现接口
-public class BloggingEfCoreRepository<TEntity> : EfRepository<EFDbContext, TEntity> , IBloggingEfCoreRepository<TEntity>
+public class BloggingEfCoreRepository<TEntity> : Repository<EFDbContext, TEntity> , IBloggingEfCoreRepository<TEntity>
      where TEntity : BaseEntity
 {
     public BloggingEfCoreRepository(EFDbContext dbContext) : base(dbContext)
@@ -30,18 +29,6 @@ public class BloggingEfCoreRepository<TEntity> : EfRepository<EFDbContext, TEnti
     }
 }
 
-// 注入：
-service.AddTransient(typeof(IBloggingEfCoreRepository<>),typeof(BloggingEfCoreRepository<>));
-
-//2. 自定义仓储
-public interface ICustomBlogRepository : IEfRepository<Blog>
-{}
-public class CustomBlogRepository : EfRepository<BloggingContext, Blog>, ICustomBlogRepository
-{
-    public CustomBlogRepository(BloggingContext dbContext) : base(dbContext)
-    {
-    }
-}
 
 // 获取仓储
 var _uow=_provider.GetService<IEfUnitOfWork<BloggingContext>>();
